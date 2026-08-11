@@ -1,0 +1,39 @@
+# Build Directories
+/build/
+/out/
+/bin/
+
+# Compiled Binaries and Objects
+*.exe
+*.dll
+*.so
+*.dylib
+*.o
+*.obj
+*.a
+*.lib
+
+# Local Database Files
+*.db
+*.db-journal
+*.db-wal
+*.sqlite
+ecommerce.db
+
+# Environment and Secrets
+.env
+*.local
+*.secret
+
+# IDE and Editor Cache
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.suo
+*.user
+*.userosv
+*.sln.docstates
+VSCodeTelemetry/
+.DS_Store
+Thumbs.db
