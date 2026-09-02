@@ -12,8 +12,13 @@ function getProductImage(p) {
     if (nameLower.includes('keyboard')) return 'assets/products/keyboard.jpg';
     if (nameLower.includes('headphone') || nameLower.includes('audio')) return 'assets/products/headphones.jpg';
     if (nameLower.includes('watch') || nameLower.includes('smart')) return 'assets/products/smartwatch.jpg';
-    if (nameLower.includes('coffee') || nameLower.includes('maker') || nameLower.includes('espresso')) return 'assets/products/coffeemaker.jpg';
+    if (nameLower.includes('camera') || nameLower.includes('vlog')) return 'assets/products/camera.jpg';
+    if (nameLower.includes('coffee') || nameLower.includes('espresso')) return 'assets/products/coffeemaker.jpg';
+    if (nameLower.includes('fryer') || nameLower.includes('air fryer')) return 'assets/products/airfryer.jpg';
     if (nameLower.includes('sneaker') || nameLower.includes('shoe')) return 'assets/products/sneakers.jpg';
+    if (nameLower.includes('jacket') || nameLower.includes('hiking')) return 'assets/products/jacket.jpg';
+    if (nameLower.includes('book') || nameLower.includes('engineering') || catLower.includes('book')) return 'assets/products/books.jpg';
+    if (nameLower.includes('dumbbell') || nameLower.includes('fitness') || catLower.includes('fitness')) return 'assets/products/dumbbell.jpg';
 
     if (catLower.includes('fashion') || catLower.includes('apparel')) return 'assets/products/sneakers.jpg';
     if (catLower.includes('home') || catLower.includes('kitchen')) return 'assets/products/coffeemaker.jpg';
@@ -105,7 +110,7 @@ function renderFilteredCatalog() {
                     <div class="card-seller">Sold by: <strong>${escapeHtml(p.seller_name || 'Seller #' + p.seller_id)}</strong></div>
                     <p class="card-desc">${escapeHtml(p.description || 'No detailed description available.')}</p>
                     <div class="card-footer">
-                        <div class="card-price">$${p.price.toFixed(2)}</div>
+                        <div class="card-price">₹${p.price.toLocaleString('en-IN')}</div>
                         <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); handleAddToCartClick(${p.id})" ${p.stock <= 0 ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
                             🛒 Add to Cart
                         </button>
@@ -155,7 +160,7 @@ function openProductDetailModal(productId) {
     document.getElementById('detail-category-badge').textContent = product.category || 'General';
     document.getElementById('detail-seller').innerHTML = `Sold by: <strong>${escapeHtml(product.seller_name)}</strong>`;
     document.getElementById('detail-desc').textContent = product.description || 'No detailed product description available.';
-    document.getElementById('detail-price').textContent = `$${product.price.toFixed(2)}`;
+    document.getElementById('detail-price').textContent = '₹' + product.price.toLocaleString('en-IN');
     
     const stockBadge = document.getElementById('detail-stock-badge');
     if (product.stock > 5) {

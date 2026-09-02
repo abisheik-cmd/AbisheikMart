@@ -246,8 +246,15 @@ bool Database::seedDefaultCatalog() {
         sqlite3_finalize(stmt);
     }
 
-    if (count >= 5) {
-        return true; // Catalog already populated
+    // Convert any old USD prices (< 500) to INR in existing database
+    execute("UPDATE products SET price = 4499.00 WHERE name LIKE '%Keyboard%' AND price < 500;");
+    execute("UPDATE products SET price = 12999.00 WHERE name LIKE '%Headphones%' AND price < 500;");
+    execute("UPDATE products SET price = 6999.00 WHERE name LIKE '%Smartwatch%' AND price < 500;");
+    execute("UPDATE products SET price = 14999.00 WHERE name LIKE '%Espresso%' AND price < 500;");
+    execute("UPDATE products SET price = 3499.00 WHERE name LIKE '%Sneakers%' AND price < 500;");
+
+    if (count >= 10) {
+        return true; // Catalog already fully populated
     }
 
     struct SeedProd {
@@ -260,16 +267,33 @@ bool Database::seedDefaultCatalog() {
     };
 
     std::vector<SeedProd> seedItems = {
-        {"Wireless Mechanical Keyboard", "RGB backlit tactile mechanical switches with multi-device Bluetooth connectivity.", 89.99, 15, "Electronics", "assets/products/keyboard.jpg"},
-        {"Noise-Cancelling Headphones", "Active noise cancelling with 40-hour battery life and spatial audio.", 199.99, 10, "Electronics", "assets/products/headphones.jpg"},
-        {"Pro Fitness Smartwatch", "Heart rate monitor, GPS tracking, and AMOLED display.", 149.50, 12, "Electronics", "assets/products/smartwatch.jpg"},
-        {"Italian Espresso Maker", "Premium 15-bar pump espresso & cappuccino machine for kitchen.", 129.95, 8, "Home", "assets/products/coffeemaker.jpg"},
-        {"Ultra Cushion Athletic Sneakers", "Lightweight breathable mesh running shoes for maximum comfort.", 79.99, 20, "Fashion", "assets/products/sneakers.jpg"}
+        {"Wireless Mechanical Keyboard", "RGB backlit tactile mechanical switches with multi-device Bluetooth connectivity.", 4499.00, 15, "Electronics", "assets/products/keyboard.jpg"},
+        {"Noise-Cancelling Headphones", "Active noise cancelling with 40-hour battery life and spatial audio.", 12999.00, 10, "Electronics", "assets/products/headphones.jpg"},
+        {"Pro Fitness Smartwatch", "Heart rate monitor, GPS tracking, and AMOLED display.", 6999.00, 12, "Electronics", "assets/products/smartwatch.jpg"},
+        {"4K Ultra-HD Vlog Camera", "Compact vlog camera with 4K recording, flip LCD screen, and directional microphone.", 42500.00, 6, "Electronics", "assets/products/camera.jpg"},
+        {"Italian Espresso Maker", "Premium 15-bar pump espresso & cappuccino machine for home kitchen.", 14999.00, 8, "Home", "assets/products/coffeemaker.jpg"},
+        {"Digital Touchscreen Air Fryer 5.5L", "Rapid hot air circulation 5.5L digital air fryer with 8 preset cooking modes.", 7499.00, 14, "Home", "assets/products/airfryer.jpg"},
+        {"Ultra Cushion Athletic Sneakers", "Lightweight breathable mesh running shoes for maximum daily comfort.", 3499.00, 20, "Fashion", "assets/products/sneakers.jpg"},
+        {"Waterproof All-Weather Hiking Jacket", "Windproof and waterproof outdoor hooded shell jacket for trekking and winter wear.", 5999.00, 11, "Fashion", "assets/products/jacket.jpg"},
+        {"Mastering Modern Software Engineering", "Complete guide to cloud architecture, system design, microservices, and clean code.", 1850.00, 25, "Books", "assets/products/books.jpg"},
+        {"Adjustable Dumbbell Set (20kg)", "Solid iron weight plates with non-slip chrome handles for home gym workouts.", 8999.00, 9, "Fitness", "assets/products/dumbbell.jpg"}
     };
 
     std::string insertSql = "INSERT INTO products (seller_id, name, description, price, stock, category, image_url) VALUES (?, ?, ?, ?, ?, ?, ?);";
     for (const auto& item : seedItems) {
-        if (sqlite3_prepare_v2(db, insertSql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+        // Skip if product already exists by name
+        std::string dupCheck = "SELECT COUNT(*) FROM products WHERE name = ?;";
+        sqlite3_stmt* dupStmt = nullptr;
+        bool exists = false;
+        if (sqlite3_prepare_v2(db, dupCheck.c_str(), -1, &dupStmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_text(dupStmt, 1, item.name.c_str(), -1, SQLITE_TRANSIENT);
+            if (sqlite3_step(dupStmt) == SQLITE_ROW && sqlite3_column_int(dupStmt, 0) > 0) {
+                exists = true;
+            }
+            sqlite3_finalize(dupStmt);
+        }
+
+        if (!exists && sqlite3_prepare_v2(db, insertSql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
             sqlite3_bind_int(stmt, 1, sellerId);
             sqlite3_bind_text(stmt, 2, item.name.c_str(), -1, SQLITE_TRANSIENT);
             sqlite3_bind_text(stmt, 3, item.desc.c_str(), -1, SQLITE_TRANSIENT);

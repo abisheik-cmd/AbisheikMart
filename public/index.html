@@ -174,7 +174,7 @@
         <div class="cart-drawer-footer">
             <div class="cart-total-row">
                 <span>Grand Total:</span>
-                <span class="cart-total-amount" id="cart-total-amount">$0.00</span>
+                <span class="cart-total-amount" id="cart-total-amount">₹0.00</span>
             </div>
             <button class="btn btn-success" style="width: 100%; padding: 0.9rem; font-size: 1rem;" onclick="openCheckoutModal()">
                 Proceed to Checkout
@@ -202,7 +202,7 @@
 
                     <div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
-                            <span id="detail-price" style="font-size: 1.8rem; font-weight: 800; color: var(--accent-green);">$0.00</span>
+                            <span id="detail-price" style="font-size: 1.8rem; font-weight: 800; color: var(--accent-green);">₹0.00</span>
                             <span id="detail-stock-badge" class="card-badge-stock in-stock">In Stock</span>
                         </div>
                         <button id="detail-add-btn" class="btn btn-primary" style="width: 100%; padding: 0.85rem;" onclick="handleAddToCartFromDetail()">
@@ -248,8 +248,8 @@
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
-                        <label for="prod-price">Price ($)</label>
-                        <input type="number" id="prod-price" class="form-control" step="0.01" min="0" placeholder="49.99" required>
+                        <label for="prod-price">Price (₹)</label>
+                        <input type="number" id="prod-price" class="form-control" step="0.01" min="0" placeholder="4499" required>
                     </div>
                     <div class="form-group">
                         <label for="prod-stock">Stock Quantity</label>
@@ -273,8 +273,13 @@
                         <option value="assets/products/keyboard.jpg">Wireless Keyboard Asset</option>
                         <option value="assets/products/headphones.jpg">Studio Headphones Asset</option>
                         <option value="assets/products/smartwatch.jpg">Fitness Smartwatch Asset</option>
+                        <option value="assets/products/camera.jpg">4K Vlog Camera Asset</option>
                         <option value="assets/products/coffeemaker.jpg">Espresso Maker Asset</option>
+                        <option value="assets/products/airfryer.jpg">Air Fryer Asset</option>
                         <option value="assets/products/sneakers.jpg">Athletic Sneakers Asset</option>
+                        <option value="assets/products/jacket.jpg">Hiking Jacket Asset</option>
+                        <option value="assets/products/books.jpg">Software Books Asset</option>
+                        <option value="assets/products/dumbbell.jpg">Adjustable Dumbbell Asset</option>
                     </select>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Save Product</button>

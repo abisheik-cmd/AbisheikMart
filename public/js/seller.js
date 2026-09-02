@@ -83,7 +83,7 @@ async function loadSellerDashboard() {
                                         </div>
                                     </td>
                                     <td><span class="card-badge-category" style="position: static;">${escapeHtml(p.category || 'General')}</span></td>
-                                    <td style="font-weight: 700; color: var(--accent-green); font-size: 1.05rem;">$${p.price.toFixed(2)}</td>
+                                    <td style="font-weight: 700; color: var(--accent-green); font-size: 1.05rem;">₹${p.price.toLocaleString('en-IN')}</td>
                                     <td>
                                         <span class="card-badge-stock ${stockClass}" style="position: static;">
                                             ${p.stock} units

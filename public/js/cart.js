@@ -33,7 +33,7 @@ async function loadCartDrawerItems() {
         cartItemsCache = data.items || [];
         cartGrandTotal = data.total || 0.0;
 
-        if (totalEl) totalEl.textContent = `$${cartGrandTotal.toFixed(2)}`;
+        if (totalEl) totalEl.textContent = `₹${cartGrandTotal.toLocaleString('en-IN')}`;
 
         if (cartItemsCache.length === 0) {
             container.innerHTML = `
@@ -55,7 +55,7 @@ async function loadCartDrawerItems() {
                     <div class="cart-item-info">
                         <div class="cart-item-title">${escapeHtml(item.product_name)}</div>
                         <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.2rem;">Seller: ${escapeHtml(item.seller_name)}</div>
-                        <div class="cart-item-price">$${item.unit_price.toFixed(2)}</div>
+                        <div class="cart-item-price">₹${item.unit_price.toLocaleString('en-IN')}</div>
                         <div class="cart-item-controls">
                             <button class="btn btn-secondary btn-sm" style="padding: 0.15rem 0.5rem;" onclick="handleQuantityChange(${item.product_id}, ${item.quantity - 1})">-</button>
                             <span style="font-weight: 700; font-size: 0.88rem; min-width: 18px; text-align: center;">${item.quantity}</span>
@@ -120,16 +120,16 @@ function openCheckoutModal() {
                     <div style="display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid var(--glass-border); font-size: 0.9rem;">
                         <div>
                             <strong>${escapeHtml(i.product_name)}</strong>
-                            <div style="font-size: 0.8rem; color: var(--text-muted);">${i.quantity} x $${i.unit_price.toFixed(2)}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">${i.quantity} x ₹${i.unit_price.toLocaleString('en-IN')}</div>
                         </div>
-                        <div style="font-weight: 700; color: var(--accent-green);">$${i.subtotal.toFixed(2)}</div>
+                        <div style="font-weight: 700; color: var(--accent-green);">₹${i.subtotal.toLocaleString('en-IN')}</div>
                     </div>
                 `).join('')}
             </div>
 
             <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 700; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
                 <span>Total Amount:</span>
-                <span style="color: var(--accent-green);">$${cartGrandTotal.toFixed(2)}</span>
+                <span style="color: var(--accent-green);">₹${cartGrandTotal.toLocaleString('en-IN')}</span>
             </div>
         `;
     }
@@ -146,7 +146,7 @@ async function confirmCheckoutOrder() {
     try {
         const data = await apiFetch('/api/checkout', { method: 'POST' });
         closeCheckoutModal();
-        showToast(`Order #${data.order.order_id} placed successfully! Total: $${data.order.total_amount.toFixed(2)}`, 'success');
+        showToast(`Order #${data.order.order_id} placed successfully! Total: ₹${data.order.total_amount.toLocaleString('en-IN')}`, 'success');
         updateCartBadgeCount();
         switchView('orders');
     } catch (err) {
@@ -189,7 +189,7 @@ async function loadOrderHistory() {
                     </div>
                     <div>
                         <span class="badge-role" style="background: rgba(2, 132, 199, 0.25); color: #38bdf8;">${order.status}</span>
-                        <span style="font-size: 1.35rem; font-weight: 800; color: var(--accent-green); margin-left: 1rem;">$${order.total_amount.toFixed(2)}</span>
+                        <span style="font-size: 1.35rem; font-weight: 800; color: var(--accent-green); margin-left: 1rem;">₹${order.total_amount.toLocaleString('en-IN')}</span>
                     </div>
                 </div>
                 <table class="data-table">
@@ -206,8 +206,8 @@ async function loadOrderHistory() {
                             <tr>
                                 <td style="color: #fff; font-weight: 600;">${escapeHtml(item.product_name)}</td>
                                 <td>${item.quantity}</td>
-                                <td>$${item.unit_price.toFixed(2)}</td>
-                                <td style="font-weight: 700; color: var(--accent-green);">$${item.subtotal.toFixed(2)}</td>
+                                <td>₹${item.unit_price.toLocaleString('en-IN')}</td>
+                                <td style="font-weight: 700; color: var(--accent-green);">₹${item.subtotal.toLocaleString('en-IN')}</td>
                             </tr>
                         `).join('')}
                     </tbody>
