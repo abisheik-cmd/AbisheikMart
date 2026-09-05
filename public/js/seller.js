@@ -62,7 +62,7 @@ async function loadSellerDashboard() {
                         <tr>
                             <th>Product</th>
                             <th>Category</th>
-                            <th>Price</th>
+                            <th>Price (Rupees INR)</th>
                             <th>Stock Status</th>
                             <th>Actions</th>
                         </tr>

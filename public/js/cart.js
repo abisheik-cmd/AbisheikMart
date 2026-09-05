@@ -128,7 +128,7 @@ function openCheckoutModal() {
             </div>
 
             <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 700; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
-                <span>Total Amount:</span>
+                <span>Total Amount (Rupees INR):</span>
                 <span style="color: var(--accent-green);">₹${cartGrandTotal.toLocaleString('en-IN')}</span>
             </div>
         `;

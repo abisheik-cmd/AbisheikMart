@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abisheikmart - Next-Gen Multi-Seller E-Commerce</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Sticky Glass Navigation Bar (Visible when authenticated) -->
+    <header class="navbar" id="main-navbar" style="display: none;">
+        <div class="brand" onclick="switchView('catalog')">
+            <img src="assets/branding/logo.jpg" alt="Abisheikmart Logo" style="height: 38px; width: 38px; border-radius: 8px; object-fit: cover; margin-right: 0.5rem; box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);"> Abisheikmart
+        </div>
+
+        <!-- Global Search Bar -->
+        <div class="nav-search" id="nav-search-container">
+            <span class="nav-search-icon">🔍</span>
+            <input type="text" id="global-search-input" placeholder="Search products, categories, sellers..." oninput="handleSearchInput(event)">
+        </div>
+
+        <nav class="nav-links">
+            <a class="nav-item active" id="nav-catalog" onclick="switchView('catalog')">
+                <span>🛍️</span> Browse
+            </a>
+            <a class="nav-item cart-btn-trigger" id="nav-cart" onclick="toggleCartDrawer(true)">
+                <span>🛒</span> Cart <span class="cart-count-badge" id="cart-count">0</span>
+            </a>
+            <a class="nav-item" id="nav-orders" onclick="switchView('orders')">
+                <span>📦</span> Orders
+            </a>
+            <a class="nav-item" id="nav-seller" style="display: none;" onclick="switchView('seller')">
+                <span>📊</span> Seller Dashboard
+            </a>
+
+            <div id="nav-user-container" style="display: flex; align-items: center; gap: 0.8rem;">
+                <span id="nav-user-role" class="badge-role">BUYER</span>
+                <span id="nav-user-name" style="font-weight: 600; color: #fff;">User</span>
+                <button class="btn btn-secondary btn-sm" onclick="handleLogout()">Log Out</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="main-content">
+
+        <!-- 1. AUTHENTICATION-FIRST LANDING PORTAL (Default screen when unauthenticated) -->
+        <section id="view-auth-landing">
+            <div class="auth-portal-card">
+                <div class="auth-header">
+                    <img src="assets/branding/logo.jpg" alt="Abisheikmart Logo" style="height: 72px; width: 72px; border-radius: 16px; object-fit: cover; margin-bottom: 0.8rem; box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);">
+                    <h1>Abisheikmart</h1>
+                    <p>Next-Gen Multi-Seller E-Commerce Platform</p>
+                </div>
+
+                <div class="auth-tabs">
+                    <button id="tab-login-btn" class="auth-tab-btn active" onclick="switchAuthTab('login')">Log In</button>
+                    <button id="tab-register-btn" class="auth-tab-btn" onclick="switchAuthTab('register')">Create Account</button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="form-login" onsubmit="handleLoginSubmit(event)">
+                    <div class="form-group">
+                        <label for="login-email">Email or Username</label>
+                        <input type="text" id="login-email" class="form-control" placeholder="admin@abishmart.com or buyer" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.2rem;">Log In to Marketplace</button>
+                </form>
+
+                <!-- Register Form -->
+                <form id="form-register" style="display: none;" onsubmit="handleRegisterSubmit(event)">
+                    <div class="form-group">
+                        <label for="reg-name">Full Name</label>
+                        <input type="text" id="reg-name" class="form-control" placeholder="Jane Doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-email">Email Address</label>
+                        <input type="email" id="reg-email" class="form-control" placeholder="jane@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">Password (Min 6 chars)</label>
+                        <input type="password" id="reg-password" class="form-control" placeholder="••••••••" minlength="6" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-role">Account Type</label>
+                        <select id="reg-role" class="form-control">
+                            <option value="BUYER">Buyer (Shop for products)</option>
+                            <option value="SELLER">Seller (List & sell items)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success" style="width: 100%; margin-top: 1.2rem;">Create Account</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- 2. AUTHENTICATED BUYER MARKETPLACE VIEW -->
+        <section id="view-catalog" style="display: none;">
+            
+            <!-- Hero Promotional Banner -->
+            <div class="hero-banner">
+                <span class="hero-badge">⚡ Featured Showcase</span>
+                <h1 class="hero-title">Next-Gen Tech & Premium Lifestyle Gear</h1>
+                <p class="hero-subtitle">Discover top-rated products from verified multi-seller stores on Abisheikmart.</p>
+                <button class="btn btn-primary" onclick="document.getElementById('catalog-grid').scrollIntoView({behavior: 'smooth'})">Explore Products ↓</button>
+            </div>
+
+            <!-- Horizontally Scrollable Category Chips -->
+            <div class="category-chips-bar" id="category-chips-container">
+                <button class="category-chip active" onclick="filterByCategory('ALL')">✨ All Items</button>
+                <button class="category-chip" onclick="filterByCategory('Electronics')">⚡ Electronics</button>
+                <button class="category-chip" onclick="filterByCategory('Fashion')">👟 Fashion & Apparel</button>
+                <button class="category-chip" onclick="filterByCategory('Home')">☕ Home & Kitchen</button>
+                <button class="category-chip" onclick="filterByCategory('Books')">📚 Books & Media</button>
+                <button class="category-chip" onclick="filterByCategory('Fitness')">🏋️ Fitness & Sports</button>
+            </div>
+
+            <!-- Discovery Header Bar -->
+            <div class="discovery-header">
+                <h2 class="discovery-title">
+                    <span>Explore Products</span>
+                    <span id="product-count-tag" style="font-size: 0.85rem; font-weight: 500; color: var(--text-secondary);"></span>
+                </h2>
+                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                    <label for="sort-select" style="font-size: 0.85rem; color: var(--text-secondary);">Sort By:</label>
+                    <select id="sort-select" class="sort-select" onchange="handleSortChange(event)">
+                        <option value="newest">Newest Arrivals</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="name">Name: A to Z</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Product Grid -->
+            <div id="catalog-grid" class="product-grid">
+                <!-- Product cards loaded dynamically -->
+            </div>
+        </section>
+
+        <!-- 3. UPGRADED SELLER DASHBOARD VIEW -->
+        <section id="view-seller" style="display: none;">
+            <div id="seller-container">
+                <!-- Seller stats & products table loaded dynamically -->
+            </div>
+        </section>
+
+        <!-- 4. PAST ORDERS VIEW -->
+        <section id="view-orders" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2>Past Order History</h2>
+            </div>
+            <div id="orders-container">
+                <!-- Orders loaded dynamically -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 5. SLIDE-OUT SHOPPING CART PANEL -->
+    <div class="cart-drawer-overlay" id="cart-drawer-overlay" onclick="toggleCartDrawer(false)"></div>
+    <div class="cart-drawer" id="cart-drawer">
+        <div class="cart-drawer-header">
+            <h3><span>🛒</span> Your Shopping Cart</h3>
+            <button class="close-drawer-btn" onclick="toggleCartDrawer(false)">&times;</button>
+        </div>
+        <div class="cart-drawer-body" id="cart-drawer-body">
+            <!-- Cart items loaded dynamically -->
+        </div>
+        <div class="cart-drawer-footer">
+            <div class="cart-total-row">
+                <span>Grand Total (Rupees INR):</span>
+                <span class="cart-total-amount" id="cart-total-amount">₹0.00</span>
+            </div>
+            <button class="btn btn-success" style="width: 100%; padding: 0.9rem; font-size: 1rem;" onclick="openCheckoutModal()">
+                Proceed to Checkout
+            </button>
+        </div>
+    </div>
+
+    <!-- 6. PRODUCT DETAILS MODAL -->
+    <div class="modal-overlay" id="product-detail-modal">
+        <div class="modal-card product-detail-modal">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <span id="detail-category-badge" class="card-badge-category">CATEGORY</span>
+                <button class="close-drawer-btn" onclick="closeProductDetailModal()">&times;</button>
+            </div>
+            <div class="product-detail-grid">
+                <div class="product-detail-image-wrap">
+                    <img id="detail-img" src="" alt="Product Detail Image">
+                </div>
+                <div style="display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <h2 id="detail-title" style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #fff;">Product Title</h2>
+                        <div id="detail-seller" class="card-seller" style="font-size: 0.9rem; margin-bottom: 1rem;">Sold by: <strong>Seller</strong></div>
+                        <p id="detail-desc" style="color: var(--text-secondary); line-height: 1.5; font-size: 0.95rem; margin-bottom: 1.5rem;">Product description goes here.</p>
+                    </div>
+
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+                            <span id="detail-price" style="font-size: 1.8rem; font-weight: 800; color: var(--accent-green);">₹0.00</span>
+                            <span id="detail-stock-badge" class="card-badge-stock in-stock">In Stock</span>
+                        </div>
+                        <button id="detail-add-btn" class="btn btn-primary" style="width: 100%; padding: 0.85rem;" onclick="handleAddToCartFromDetail()">
+                            🛒 Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. CHECKOUT CONFIRMATION MODAL -->
+    <div class="modal-overlay" id="checkout-modal">
+        <div class="modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3>Order Checkout Summary</h3>
+                <button class="close-drawer-btn" onclick="closeCheckoutModal()">&times;</button>
+            </div>
+            <div id="checkout-summary-content" style="margin-bottom: 1.5rem;">
+                <!-- Summary content dynamically loaded -->
+            </div>
+            <button class="btn btn-success" style="width: 100%; padding: 0.85rem;" onclick="confirmCheckoutOrder()">
+                Confirm & Place Order
+            </button>
+        </div>
+    </div>
+
+    <!-- 8. SELLER ADD/EDIT PRODUCT MODAL -->
+    <div class="modal-overlay" id="product-modal">
+        <div class="modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 id="product-modal-title">Add New Product</h3>
+                <button class="close-drawer-btn" onclick="closeProductModal()">&times;</button>
+            </div>
+            <form id="form-product" onsubmit="handleSaveProductSubmit(event)">
+                <div class="form-group">
+                    <label for="prod-name">Product Name</label>
+                    <input type="text" id="prod-name" class="form-control" placeholder="e.g. Wireless Mechanical Keyboard" required>
+                </div>
+                <div class="form-group">
+                    <label for="prod-desc">Description</label>
+                    <textarea id="prod-desc" class="form-control" rows="3" placeholder="Detailed product description..."></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="prod-price">Price (Rupees INR)</label>
+                        <input type="number" id="prod-price" class="form-control" step="0.01" min="0" placeholder="4499" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="prod-stock">Stock Quantity</label>
+                        <input type="number" id="prod-stock" class="form-control" min="0" placeholder="10" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="prod-category">Category</label>
+                    <select id="prod-category" class="form-control">
+                        <option value="Electronics">Electronics</option>
+                        <option value="Fashion">Fashion & Apparel</option>
+                        <option value="Home">Home & Kitchen</option>
+                        <option value="Books">Books & Media</option>
+                        <option value="Fitness">Fitness & Sports</option>
+                        <option value="General">General</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="prod-image-preset">Product Image Asset</label>
+                    <select id="prod-image-preset" class="form-control">
+                        <option value="assets/products/keyboard.jpg">Wireless Keyboard Asset</option>
+                        <option value="assets/products/headphones.jpg">Studio Headphones Asset</option>
+                        <option value="assets/products/smartwatch.jpg">Fitness Smartwatch Asset</option>
+                        <option value="assets/products/camera.jpg">4K Vlog Camera Asset</option>
+                        <option value="assets/products/coffeemaker.jpg">Espresso Maker Asset</option>
+                        <option value="assets/products/airfryer.jpg">Air Fryer Asset</option>
+                        <option value="assets/products/sneakers.jpg">Athletic Sneakers Asset</option>
+                        <option value="assets/products/jacket.jpg">Hiking Jacket Asset</option>
+                        <option value="assets/products/books.jpg">Software Books Asset</option>
+                        <option value="assets/products/dumbbell.jpg">Adjustable Dumbbell Asset</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Save Product</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
+
+    <!-- JavaScript Files -->
+    <script src="js/app.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/seller.js"></script>
+</body>
+</html>

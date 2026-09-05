@@ -1,0 +1,3 @@
+C:/Users/abish/OneDrive/Documents/Abisheikmart/build/CMakeFiles/AbisheikmartServer.dir
+C:/Users/abish/OneDrive/Documents/Abisheikmart/build/CMakeFiles/edit_cache.dir
+C:/Users/abish/OneDrive/Documents/Abisheikmart/build/CMakeFiles/rebuild_cache.dir
