@@ -1,27 +1,17 @@
 package com.abisheikmart.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 
-public class OrderItem {
+public class OrderItem implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Long id;
-    
-    @JsonProperty("order_id")
     private Long orderId;
-    
-    @JsonProperty("product_id")
     private Long productId;
-    
-    @JsonProperty("seller_id")
     private Long sellerId;
-    
-    @JsonProperty("product_name")
     private String productName;
-    
     private Integer quantity;
-    
-    @JsonProperty("unit_price")
     private Double unitPrice;
-    
     private Double subtotal;
 
     public OrderItem() {}
@@ -50,4 +40,3 @@ public class OrderItem {
     public Double getSubtotal() { return subtotal; }
     public void setSubtotal(Double subtotal) { this.subtotal = subtotal; }
 }
-

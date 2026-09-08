@@ -1,48 +1,33 @@
 package com.abisheikmart.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
+import java.sql.Timestamp;
 
-public class CartItem {
+public class CartItem implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Long id;
-    
-    @JsonProperty("buyer_id")
-    private Long buyerId;
-    
-    @JsonProperty("product_id")
+    private Long cartId;
     private Long productId;
-    
-    @JsonProperty("product_name")
     private String productName;
-    
     private String description;
-    
-    @JsonProperty("unit_price")
     private Double unitPrice;
-    
     private Double subtotal;
     private Integer quantity;
-    
-    @JsonProperty("available_stock")
     private Integer availableStock;
-    
-    private String category;
-    
-    @JsonProperty("seller_id")
+    private String categoryName;
     private Long sellerId;
-    
-    @JsonProperty("seller_name")
     private String sellerName;
-    
-    @JsonProperty("created_at")
-    private String createdAt;
+    private String imageUrl;
+    private Timestamp createdAt;
 
     public CartItem() {}
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public Long getBuyerId() { return buyerId; }
-    public void setBuyerId(Long buyerId) { this.buyerId = buyerId; }
+    public Long getCartId() { return cartId; }
+    public void setCartId(Long cartId) { this.cartId = cartId; }
 
     public Long getProductId() { return productId; }
     public void setProductId(Long productId) { this.productId = productId; }
@@ -65,8 +50,8 @@ public class CartItem {
     public Integer getAvailableStock() { return availableStock; }
     public void setAvailableStock(Integer availableStock) { this.availableStock = availableStock; }
 
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
+    public String getCategoryName() { return categoryName; }
+    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
 
     public Long getSellerId() { return sellerId; }
     public void setSellerId(Long sellerId) { this.sellerId = sellerId; }
@@ -74,7 +59,9 @@ public class CartItem {
     public String getSellerName() { return sellerName; }
     public void setSellerName(String sellerName) { this.sellerName = sellerName; }
 
-    public String getCreatedAt() { return createdAt; }
-    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
-}
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
+    public Timestamp getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+}

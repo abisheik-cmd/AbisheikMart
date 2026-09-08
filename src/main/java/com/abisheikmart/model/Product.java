@@ -1,16 +1,22 @@
 package com.abisheikmart.model;
 
-public class Product {
+import java.io.Serializable;
+import java.sql.Timestamp;
+
+public class Product implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Long id;
     private Long sellerId;
     private String sellerName;
+    private Long categoryId;
+    private String categoryName;
     private String name;
     private String description;
     private Double price;
     private Integer stock;
-    private String category;
     private String imageUrl;
-    private String createdAt;
+    private Timestamp createdAt;
 
     public Product() {}
 
@@ -22,6 +28,12 @@ public class Product {
 
     public String getSellerName() { return sellerName; }
     public void setSellerName(String sellerName) { this.sellerName = sellerName; }
+
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
+
+    public String getCategoryName() { return categoryName; }
+    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -35,13 +47,9 @@ public class Product {
     public Integer getStock() { return stock; }
     public void setStock(Integer stock) { this.stock = stock; }
 
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
-
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
-    public String getCreatedAt() { return createdAt; }
-    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public Timestamp getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 }
-

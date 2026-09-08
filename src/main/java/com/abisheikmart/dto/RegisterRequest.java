@@ -4,7 +4,7 @@ public class RegisterRequest {
     private String name;
     private String email;
     private String password;
-    private String role; // BUYER, SELLER
+    private String role;
 
     public RegisterRequest() {}
 
@@ -20,4 +20,3 @@ public class RegisterRequest {
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 }
-

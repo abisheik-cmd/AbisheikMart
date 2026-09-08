@@ -1,71 +1,74 @@
 package com.abisheikmart.service;
 
+import com.abisheikmart.dao.UserDao;
 import com.abisheikmart.dto.LoginRequest;
 import com.abisheikmart.dto.RegisterRequest;
 import com.abisheikmart.model.User;
-import com.abisheikmart.repository.UserRepository;
-import com.abisheikmart.util.CryptoUtils;
-import org.springframework.stereotype.Service;
+import com.abisheikmart.util.PasswordUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Map;
+import java.sql.SQLException;
 import java.util.Optional;
 
-@Service
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final CryptoUtils cryptoUtils;
+    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
+    private final UserDao userDao;
 
-    public AuthService(UserRepository userRepository, CryptoUtils cryptoUtils) {
-        this.userRepository = userRepository;
-        this.cryptoUtils = cryptoUtils;
+    public AuthService() {
+        this.userDao = new UserDao();
     }
 
-    public Map<String, Object> register(RegisterRequest req) {
-        if (req.getEmail() == null || req.getEmail().isBlank() || req.getPassword() == null || req.getPassword().isBlank()) {
-            throw new IllegalArgumentException("Email and password are required");
+    public AuthService(UserDao userDao) {
+        this.userDao = userDao;
+    }
+
+    public User register(RegisterRequest request) throws IllegalArgumentException, SQLException {
+        if (request.getEmail() == null || request.getEmail().isBlank()) {
+            throw new IllegalArgumentException("Email address is required.");
         }
-        if (userRepository.existsByEmail(req.getEmail())) {
-            throw new IllegalArgumentException("User with this email already exists");
+        if (request.getPassword() == null || request.getPassword().length() < 6) {
+            throw new IllegalArgumentException("Password must be at least 6 characters long.");
+        }
+        if (userDao.existsByEmail(request.getEmail().trim())) {
+            throw new IllegalArgumentException("An account with this email address already exists.");
         }
 
-        String role = (req.getRole() != null && req.getRole().equalsIgnoreCase("SELLER")) ? "SELLER" : "BUYER";
-        String salt = cryptoUtils.generateSalt();
-        String passwordHash = cryptoUtils.hashPassword(req.getPassword(), salt);
+        String role = ("SELLER".equalsIgnoreCase(request.getRole())) ? "SELLER" : "CUSTOMER";
+        String hashed = PasswordUtil.hashPassword(request.getPassword());
 
         User user = new User();
-        user.setName(req.getName() != null && !req.getName().isBlank() ? req.getName() : req.getEmail().split("@")[0]);
-        user.setEmail(req.getEmail());
-        user.setPasswordHash(passwordHash);
-        user.setSalt(salt);
+        user.setName(request.getName() != null && !request.getName().isBlank() ? request.getName().trim() : request.getEmail().split("@")[0]);
+        user.setEmail(request.getEmail().trim().toLowerCase());
+        user.setPasswordHash(hashed);
         user.setRole(role);
 
-        User savedUser = userRepository.save(user);
-        String token = cryptoUtils.createSession(savedUser);
-
-        return Map.of("token", token, "user", savedUser);
+        User saved = userDao.save(user);
+        logger.info("Successfully registered user id: {}, email: {}, role: {}", saved.getId(), saved.getEmail(), saved.getRole());
+        return saved;
     }
 
-    public Map<String, Object> login(LoginRequest req) {
-        String email = req.getEmail();
-        if (email == null || email.isBlank() || req.getPassword() == null || req.getPassword().isBlank()) {
-            throw new IllegalArgumentException("Email and password are required");
+    public User login(LoginRequest request) throws IllegalArgumentException {
+        if (request.getEmail() == null || request.getEmail().isBlank()) {
+            throw new IllegalArgumentException("Email address is required.");
+        }
+        if (request.getPassword() == null || request.getPassword().isBlank()) {
+            throw new IllegalArgumentException("Password is required.");
         }
 
-        Optional<User> userOpt = userRepository.findByEmail(email);
+        Optional<User> userOpt = userDao.findByEmail(request.getEmail().trim().toLowerCase());
         if (userOpt.isEmpty()) {
-            throw new IllegalArgumentException("Invalid email or password");
+            throw new IllegalArgumentException("Invalid email or password.");
         }
 
         User user = userOpt.get();
-        String hash = cryptoUtils.hashPassword(req.getPassword(), user.getSalt());
-
-        if (!hash.equalsIgnoreCase(user.getPasswordHash())) {
-            throw new IllegalArgumentException("Invalid email or password");
+        if (!PasswordUtil.checkPassword(request.getPassword(), user.getPasswordHash())) {
+            logger.warn("Failed login attempt for email: {}", request.getEmail());
+            throw new IllegalArgumentException("Invalid email or password.");
         }
 
-        String token = cryptoUtils.createSession(user);
-        return Map.of("token", token, "user", user);
+        logger.info("Successful login for user id: {}, email: {}, role: {}", user.getId(), user.getEmail(), user.getRole());
+        return user;
     }
 }
-

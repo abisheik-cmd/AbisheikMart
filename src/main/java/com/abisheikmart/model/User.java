@@ -1,24 +1,25 @@
 package com.abisheikmart.model;
 
-import java.time.LocalDateTime;
+import java.io.Serializable;
+import java.sql.Timestamp;
 
-public class User {
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Long id;
     private String name;
     private String email;
     private String passwordHash;
-    private String salt;
-    private String role; // BUYER, SELLER, ADMIN
-    private String createdAt;
+    private String role; // CUSTOMER, SELLER, ADMIN
+    private Timestamp createdAt;
 
     public User() {}
 
-    public User(Long id, String name, String email, String passwordHash, String salt, String role, String createdAt) {
+    public User(Long id, String name, String email, String passwordHash, String role, Timestamp createdAt) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.passwordHash = passwordHash;
-        this.salt = salt;
         this.role = role;
         this.createdAt = createdAt;
     }
@@ -35,13 +36,9 @@ public class User {
     public String getPasswordHash() { return passwordHash; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
 
-    public String getSalt() { return salt; }
-    public void setSalt(String salt) { this.salt = salt; }
-
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 
-    public String getCreatedAt() { return createdAt; }
-    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public Timestamp getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 }
-

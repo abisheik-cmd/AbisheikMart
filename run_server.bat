@@ -4,8 +4,10 @@ echo   Abisheikmart - Java Spring Boot Server Launcher
 echo ===================================================
 
 IF "%JAVA_HOME%"=="" (
-    IF EXIST "C:\Program Files\Java\jdk-26.0.2" (
-        set "JAVA_HOME=C:\Program Files\Java\jdk-26.0.2"
+    IF EXIST "%USERPROFILE%\.jdk\jdk-25.0.2" (
+        set "JAVA_HOME=%USERPROFILE%\.jdk\jdk-25.0.2"
+    ) ELSE IF EXIST "C:\Program Files\Java\jdk-25" (
+        set "JAVA_HOME=C:\Program Files\Java\jdk-25"
     ) ELSE IF EXIST "C:\Program Files\Java\latest" (
         set "JAVA_HOME=C:\Program Files\Java\latest"
     )
