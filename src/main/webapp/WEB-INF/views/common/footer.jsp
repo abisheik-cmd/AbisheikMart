@@ -7,6 +7,8 @@
 
 <script src="${pageContext.request.contextPath}/js/app.js"></script>
 <script src="${pageContext.request.contextPath}/js/cart-ajax.js"></script>
+<script src="${pageContext.request.contextPath}/js/seller-ajax.js"></script>
+<script src="${pageContext.request.contextPath}/js/features.js"></script>
 </body>
 </html>
 

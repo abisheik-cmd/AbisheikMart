@@ -6,7 +6,9 @@ import com.abisheikmart.model.Order;
 import com.abisheikmart.model.User;
 import com.abisheikmart.service.CartService;
 import com.abisheikmart.service.OrderService;
+import com.abisheikmart.service.OtpService;
 import com.abisheikmart.util.JsonUtil;
+import com.google.gson.JsonObject;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -21,6 +23,7 @@ public class CheckoutServlet extends HttpServlet {
 
     private final CartService cartService = new CartService();
     private final OrderService orderService = new OrderService();
+    private final OtpService otpService = new OtpService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -54,19 +57,61 @@ public class CheckoutServlet extends HttpServlet {
 
         if (user == null) {
             resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            resp.sendRedirect(req.getContextPath() + "/login");
+            if (req.getServletPath().startsWith("/api/")) {
+                resp.setContentType("application/json");
+                resp.getWriter().write(JsonUtil.toJson(ApiResponse.error("Login required for checkout.")));
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/login");
+            }
             return;
         }
 
         boolean isApi = req.getServletPath().startsWith("/api/");
+        String deliveryAddress = "";
+        String phoneNumber = "";
+        String paymentMethod = "CASH_ON_DELIVERY";
+        String couponCode = "";
+        String otpInput = "";
+
+        if (isApi) {
+            try {
+                JsonObject json = JsonUtil.fromJson(req.getReader(), JsonObject.class);
+                if (json != null) {
+                    if (json.has("deliveryAddress")) deliveryAddress = json.get("deliveryAddress").getAsString();
+                    if (json.has("phoneNumber")) phoneNumber = json.get("phoneNumber").getAsString();
+                    if (json.has("paymentMethod")) paymentMethod = json.get("paymentMethod").getAsString();
+                    if (json.has("couponCode")) couponCode = json.get("couponCode").getAsString();
+                    if (json.has("otp")) otpInput = json.get("otp").getAsString();
+                }
+            } catch (Exception ignored) {}
+        } else {
+            deliveryAddress = req.getParameter("deliveryAddress");
+            phoneNumber = req.getParameter("phoneNumber");
+            paymentMethod = req.getParameter("paymentMethod");
+            couponCode = req.getParameter("couponCode");
+            otpInput = req.getParameter("otp");
+        }
+
+        // Verify OTP if phone number provided and not verified in session
+        if (phoneNumber != null && !phoneNumber.isBlank() && otpInput != null && !otpInput.isBlank()) {
+            boolean valid = otpService.verifyOtp(phoneNumber, otpInput);
+            if (!valid) {
+                if (isApi) {
+                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    resp.setContentType("application/json");
+                    resp.getWriter().write(JsonUtil.toJson(ApiResponse.error("Invalid or expired Mobile OTP verification code.")));
+                    return;
+                }
+            }
+        }
 
         try {
-            Order order = orderService.checkout(user.getId());
+            Order order = orderService.checkout(user.getId(), deliveryAddress, phoneNumber, paymentMethod, couponCode);
 
             if (isApi) {
                 resp.setContentType("application/json");
                 resp.setStatus(HttpServletResponse.SC_CREATED);
-                resp.getWriter().write(JsonUtil.toJson(ApiResponse.ok("Order placed successfully", order)));
+                resp.getWriter().write(JsonUtil.toJson(ApiResponse.ok("Order placed successfully!", order)));
             } else {
                 resp.sendRedirect(req.getContextPath() + "/orders?checkout=success&orderId=" + order.getId());
             }
@@ -91,4 +136,3 @@ public class CheckoutServlet extends HttpServlet {
         }
     }
 }
-

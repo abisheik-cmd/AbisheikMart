@@ -14,6 +14,11 @@ public class Order implements Serializable {
     private String userEmail;
     private Double totalAmount;
     private String status; // PLACED, SHIPPED, DELIVERED, CANCELLED
+    private String deliveryAddress;
+    private String phoneNumber;
+    private String paymentMethod;
+    private String couponCode;
+    private Double discountAmount;
     private Timestamp createdAt;
     private List<OrderItem> items = new ArrayList<>();
 
@@ -36,6 +41,21 @@ public class Order implements Serializable {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getDeliveryAddress() { return deliveryAddress; }
+    public void setDeliveryAddress(String deliveryAddress) { this.deliveryAddress = deliveryAddress; }
+
+    public String getPhoneNumber() { return phoneNumber; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+
+    public String getCouponCode() { return couponCode; }
+    public void setCouponCode(String couponCode) { this.couponCode = couponCode; }
+
+    public Double getDiscountAmount() { return discountAmount != null ? discountAmount : 0.0; }
+    public void setDiscountAmount(Double discountAmount) { this.discountAmount = discountAmount; }
 
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }

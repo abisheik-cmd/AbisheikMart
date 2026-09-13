@@ -13,6 +13,10 @@
     </form>
 
     <nav class="nav-links">
+        <button type="button" class="btn btn-warning btn-sm nav-lucky-btn" onclick="openLuckyDrawModal()">
+            🎁 Lucky Draw
+        </button>
+
         <a href="${pageContext.request.contextPath}/catalog" class="nav-item ${activeNav == 'catalog' ? 'active' : ''}">
             <span>🛍️</span> Browse
         </a>
@@ -22,6 +26,24 @@
         <a href="${pageContext.request.contextPath}/orders" class="nav-item ${activeNav == 'orders' ? 'active' : ''}">
             <span>📦</span> Orders
         </a>
+
+        <c:if test="${sessionScope.user != null}">
+            <!-- Notifications Bell Dropdown -->
+            <div class="notification-dropdown-container">
+                <button type="button" class="notification-bell-btn" onclick="toggleNotificationDropdown()">
+                    🔔 <span class="notif-badge" id="notif-count">0</span>
+                </button>
+                <div class="notification-dropdown-menu" id="notif-menu">
+                    <div class="notif-header">
+                        <span>Notifications</span>
+                        <button type="button" class="notif-clear-btn" onclick="markNotificationsRead()">Mark Read</button>
+                    </div>
+                    <div class="notif-body" id="notif-list">
+                        <div class="notif-item">No new notifications</div>
+                    </div>
+                </div>
+            </div>
+        </c:if>
 
         <c:if test="${sessionScope.user != null && (sessionScope.user.role == 'SELLER' || sessionScope.user.role == 'ADMIN')}">
             <a href="${pageContext.request.contextPath}/seller/dashboard" class="nav-item ${activeNav == 'seller' ? 'active' : ''}">
@@ -44,4 +66,3 @@
         </div>
     </nav>
 </header>
-

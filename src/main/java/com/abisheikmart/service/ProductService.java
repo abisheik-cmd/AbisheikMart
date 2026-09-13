@@ -39,6 +39,10 @@ public class ProductService {
         return productDao.findByCategoryId(categoryId);
     }
 
+    public List<Product> getRecommendations(Long limit) {
+        return productDao.findRecommendations(limit);
+    }
+
     public List<Product> searchProducts(String query, String categoryName, String sortBy) {
         return productDao.search(query, categoryName, sortBy);
     }
@@ -51,6 +55,7 @@ public class ProductService {
         p.setCategoryId(req.getCategoryId() != null ? req.getCategoryId() : 1L);
         p.setName(req.getName().trim());
         p.setDescription(req.getDescription() != null ? req.getDescription().trim() : "");
+        p.setOriginalPrice(req.getOriginalPrice() != null ? req.getOriginalPrice() : req.getPrice());
         p.setPrice(req.getPrice());
         p.setStock(req.getStock());
         p.setImageUrl(req.getImageUrl() != null && !req.getImageUrl().isBlank() ? req.getImageUrl().trim() : "images/keyboard.jpg");
@@ -79,6 +84,7 @@ public class ProductService {
         existing.setCategoryId(req.getCategoryId());
         existing.setName(req.getName().trim());
         existing.setDescription(req.getDescription() != null ? req.getDescription().trim() : "");
+        existing.setOriginalPrice(req.getOriginalPrice() != null ? req.getOriginalPrice() : req.getPrice());
         existing.setPrice(req.getPrice());
         existing.setStock(req.getStock());
         if (req.getImageUrl() != null && !req.getImageUrl().isBlank()) {
@@ -118,4 +124,3 @@ public class ProductService {
         }
     }
 }
-

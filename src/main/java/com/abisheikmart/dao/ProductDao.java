@@ -16,15 +16,21 @@ public class ProductDao {
 
     private static final String BASE_SELECT = """
         SELECT p.id, p.seller_id, u.name AS seller_name, p.category_id, c.name AS category_name,
-               p.name, p.description, p.price, p.stock, COALESCE(p.image_url, '') AS image_url, p.created_at
+               p.name, p.description, COALESCE(p.original_price, p.price) AS original_price, p.price, p.stock,
+               COALESCE(p.image_url, '') AS image_url, p.created_at,
+               COALESCE(AVG(r.rating), 0.0) AS avg_rating,
+               COUNT(r.id) AS review_count
         FROM products p
         JOIN users u ON p.seller_id = u.id
         JOIN categories c ON p.category_id = c.id
+        LEFT JOIN reviews r ON p.id = r.product_id
     """;
+
+    private static final String GROUP_BY = " GROUP BY p.id, p.seller_id, u.name, p.category_id, c.name, p.name, p.description, p.original_price, p.price, p.stock, p.image_url, p.created_at ";
 
     public List<Product> findAll() {
         List<Product> list = new ArrayList<>();
-        String sql = BASE_SELECT + " ORDER BY p.id DESC;";
+        String sql = BASE_SELECT + GROUP_BY + " ORDER BY p.id DESC;";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -38,7 +44,7 @@ public class ProductDao {
     }
 
     public Optional<Product> findById(Long id) {
-        String sql = BASE_SELECT + " WHERE p.id = ?;";
+        String sql = BASE_SELECT + " WHERE p.id = ?" + GROUP_BY + ";";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -55,7 +61,7 @@ public class ProductDao {
 
     public List<Product> findBySellerId(Long sellerId) {
         List<Product> list = new ArrayList<>();
-        String sql = BASE_SELECT + " WHERE p.seller_id = ? ORDER BY p.id DESC;";
+        String sql = BASE_SELECT + " WHERE p.seller_id = ?" + GROUP_BY + " ORDER BY p.id DESC;";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, sellerId);
@@ -72,7 +78,7 @@ public class ProductDao {
 
     public List<Product> findByCategoryId(Long categoryId) {
         List<Product> list = new ArrayList<>();
-        String sql = BASE_SELECT + " WHERE p.category_id = ? ORDER BY p.id DESC;";
+        String sql = BASE_SELECT + " WHERE p.category_id = ?" + GROUP_BY + " ORDER BY p.id DESC;";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, categoryId);
@@ -83,6 +89,23 @@ public class ProductDao {
             }
         } catch (SQLException e) {
             logger.error("Error finding products by category id: {}", categoryId, e);
+        }
+        return list;
+    }
+
+    public List<Product> findRecommendations(Long limit) {
+        List<Product> list = new ArrayList<>();
+        String sql = BASE_SELECT + GROUP_BY + " ORDER BY avg_rating DESC, p.id DESC LIMIT ?;";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, limit != null ? limit : 6);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapProduct(rs));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error finding recommendation products", e);
         }
         return list;
     }
@@ -98,12 +121,16 @@ public class ProductDao {
             sql.append(" AND LOWER(c.name) = LOWER(?) ");
         }
 
+        sql.append(GROUP_BY);
+
         if ("price-low".equalsIgnoreCase(sortBy)) {
             sql.append(" ORDER BY p.price ASC ");
         } else if ("price-high".equalsIgnoreCase(sortBy)) {
             sql.append(" ORDER BY p.price DESC ");
         } else if ("name".equalsIgnoreCase(sortBy)) {
             sql.append(" ORDER BY p.name ASC ");
+        } else if ("rating".equalsIgnoreCase(sortBy)) {
+            sql.append(" ORDER BY avg_rating DESC ");
         } else {
             sql.append(" ORDER BY p.id DESC ");
         }
@@ -133,16 +160,17 @@ public class ProductDao {
     }
 
     public Product save(Product product) throws SQLException {
-        String sql = "INSERT INTO products (seller_id, category_id, name, description, price, stock, image_url) VALUES (?, ?, ?, ?, ?, ?, ?);";
+        String sql = "INSERT INTO products (seller_id, category_id, name, description, original_price, price, stock, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, product.getSellerId());
             ps.setLong(2, product.getCategoryId());
             ps.setString(3, product.getName());
             ps.setString(4, product.getDescription());
-            ps.setDouble(5, product.getPrice());
-            ps.setInt(6, product.getStock());
-            ps.setString(7, product.getImageUrl() != null ? product.getImageUrl() : "");
+            ps.setDouble(5, product.getOriginalPrice() != null ? product.getOriginalPrice() : product.getPrice());
+            ps.setDouble(6, product.getPrice());
+            ps.setInt(7, product.getStock());
+            ps.setString(8, product.getImageUrl() != null ? product.getImageUrl() : "");
             ps.executeUpdate();
 
             try (ResultSet keys = ps.getGeneratedKeys()) {
@@ -155,17 +183,18 @@ public class ProductDao {
     }
 
     public boolean update(Product product) throws SQLException {
-        String sql = "UPDATE products SET category_id = ?, name = ?, description = ?, price = ?, stock = ?, image_url = ? WHERE id = ? AND seller_id = ?;";
+        String sql = "UPDATE products SET category_id = ?, name = ?, description = ?, original_price = ?, price = ?, stock = ?, image_url = ? WHERE id = ? AND seller_id = ?;";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, product.getCategoryId());
             ps.setString(2, product.getName());
             ps.setString(3, product.getDescription());
-            ps.setDouble(4, product.getPrice());
-            ps.setInt(5, product.getStock());
-            ps.setString(6, product.getImageUrl());
-            ps.setLong(7, product.getId());
-            ps.setLong(8, product.getSellerId());
+            ps.setDouble(4, product.getOriginalPrice());
+            ps.setDouble(5, product.getPrice());
+            ps.setInt(6, product.getStock());
+            ps.setString(7, product.getImageUrl());
+            ps.setLong(8, product.getId());
+            ps.setLong(9, product.getSellerId());
             return ps.executeUpdate() > 0;
         }
     }
@@ -191,10 +220,15 @@ public class ProductDao {
         p.setCategoryName(rs.getString("category_name"));
         p.setName(rs.getString("name"));
         p.setDescription(rs.getString("description"));
+        p.setOriginalPrice(rs.getDouble("original_price"));
         p.setPrice(rs.getDouble("price"));
         p.setStock(rs.getInt("stock"));
         p.setImageUrl(rs.getString("image_url"));
         p.setCreatedAt(rs.getTimestamp("created_at"));
+        try {
+            p.setAverageRating(rs.getDouble("avg_rating"));
+            p.setReviewCount(rs.getInt("review_count"));
+        } catch (SQLException ignored) {}
         return p;
     }
 }

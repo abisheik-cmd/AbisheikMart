@@ -5,6 +5,7 @@ public class ProductRequest {
     private Long categoryId;
     private String name;
     private String description;
+    private Double originalPrice;
     private Double price;
     private Integer stock;
     private String imageUrl;
@@ -22,6 +23,9 @@ public class ProductRequest {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public Double getOriginalPrice() { return originalPrice; }
+    public void setOriginalPrice(Double originalPrice) { this.originalPrice = originalPrice; }
 
     public Double getPrice() { return price; }
     public void setPrice(Double price) { this.price = price; }

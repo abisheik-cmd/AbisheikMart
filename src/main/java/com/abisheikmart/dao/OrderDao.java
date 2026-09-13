@@ -16,18 +16,25 @@ public class OrderDao {
 
     private static final Logger logger = LoggerFactory.getLogger(OrderDao.class);
 
-    public Order checkout(Long userId, Long cartId, List<CartItem> cartItems, double totalAmount) throws SQLException {
+    public Order checkout(Long userId, Long cartId, List<CartItem> cartItems, double totalAmount,
+                          String deliveryAddress, String phoneNumber, String paymentMethod,
+                          String couponCode, double discountAmount) throws SQLException {
         Connection conn = null;
         try {
             conn = DBUtil.getConnection();
             conn.setAutoCommit(false);
 
             // 1. Insert into orders
-            String orderSql = "INSERT INTO orders (user_id, total_amount, status) VALUES (?, ?, 'PLACED');";
+            String orderSql = "INSERT INTO orders (user_id, total_amount, status, delivery_address, phone_number, payment_method, coupon_code, discount_amount) VALUES (?, ?, 'PLACED', ?, ?, ?, ?, ?);";
             long orderId;
             try (PreparedStatement psOrder = conn.prepareStatement(orderSql, Statement.RETURN_GENERATED_KEYS)) {
                 psOrder.setLong(1, userId);
                 psOrder.setDouble(2, totalAmount);
+                psOrder.setString(3, deliveryAddress);
+                psOrder.setString(4, phoneNumber);
+                psOrder.setString(5, paymentMethod != null ? paymentMethod : "CASH_ON_DELIVERY");
+                psOrder.setString(6, couponCode);
+                psOrder.setDouble(7, discountAmount);
                 psOrder.executeUpdate();
                 try (ResultSet keys = psOrder.getGeneratedKeys()) {
                     if (keys.next()) {
@@ -89,6 +96,11 @@ public class OrderDao {
             order.setUserId(userId);
             order.setTotalAmount(totalAmount);
             order.setStatus("PLACED");
+            order.setDeliveryAddress(deliveryAddress);
+            order.setPhoneNumber(phoneNumber);
+            order.setPaymentMethod(paymentMethod);
+            order.setCouponCode(couponCode);
+            order.setDiscountAmount(discountAmount);
             order.setItems(orderItems);
             return order;
 
@@ -117,7 +129,8 @@ public class OrderDao {
     public List<Order> findOrdersByUserId(Long userId) {
         List<Order> orders = new ArrayList<>();
         String sql = """
-            SELECT o.id, o.user_id, u.name AS user_name, u.email AS user_email, o.total_amount, o.status, o.created_at
+            SELECT o.id, o.user_id, u.name AS user_name, u.email AS user_email, o.total_amount, o.status,
+                   o.delivery_address, o.phone_number, o.payment_method, o.coupon_code, o.discount_amount, o.created_at
             FROM orders o
             JOIN users u ON o.user_id = u.id
             WHERE o.user_id = ?
@@ -141,7 +154,8 @@ public class OrderDao {
 
     public Optional<Order> findOrderById(Long orderId) {
         String sql = """
-            SELECT o.id, o.user_id, u.name AS user_name, u.email AS user_email, o.total_amount, o.status, o.created_at
+            SELECT o.id, o.user_id, u.name AS user_name, u.email AS user_email, o.total_amount, o.status,
+                   o.delivery_address, o.phone_number, o.payment_method, o.coupon_code, o.discount_amount, o.created_at
             FROM orders o
             JOIN users u ON o.user_id = u.id
             WHERE o.id = ?;
@@ -196,6 +210,11 @@ public class OrderDao {
         o.setUserEmail(rs.getString("user_email"));
         o.setTotalAmount(rs.getDouble("total_amount"));
         o.setStatus(rs.getString("status"));
+        o.setDeliveryAddress(rs.getString("delivery_address"));
+        o.setPhoneNumber(rs.getString("phone_number"));
+        o.setPaymentMethod(rs.getString("payment_method"));
+        o.setCouponCode(rs.getString("coupon_code"));
+        o.setDiscountAmount(rs.getDouble("discount_amount"));
         o.setCreatedAt(rs.getTimestamp("created_at"));
         return o;
     }

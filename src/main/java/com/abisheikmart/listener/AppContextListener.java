@@ -57,16 +57,14 @@ public class AppContextListener implements ServletContextListener {
                 }
             }
 
-            // Seed default categories
-            String[] categories = {"Electronics", "Fashion", "Home", "Books", "Fitness"};
+            // Seed categories
+            String[] categories = {"Electronics", "Mobiles", "Fashion", "Home", "Books", "Fitness", "Accessories"};
             for (String cat : categories) {
-                try (PreparedStatement ps = conn.prepareStatement("INSERT INTO categories (name, description) VALUES (?, ?) ON CONFLICT DO NOTHING;")) {
+                try (PreparedStatement ps = conn.prepareStatement("MERGE INTO categories (name, description) KEY(name) VALUES (?, ?);")) {
                     ps.setString(1, cat);
-                    ps.setString(2, cat + " category products");
+                    ps.setString(2, cat + " products");
                     ps.executeUpdate();
-                } catch (Exception ignored) {
-                    // Category already exists
-                }
+                } catch (Exception ignored) {}
             }
 
             // Seed default Admin
@@ -75,7 +73,7 @@ public class AppContextListener implements ServletContextListener {
                 ResultSet rs = psCheck.executeQuery();
                 if (rs.next() && rs.getInt(1) == 0) {
                     try (PreparedStatement psInsert = conn.prepareStatement(
-                            "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, 'ADMIN');")) {
+                            "INSERT INTO users (name, email, password_hash, role, phone) VALUES (?, ?, ?, 'ADMIN', '9876543210');")) {
                         psInsert.setString(1, "System Administrator");
                         psInsert.setString(2, "admin@abishmart.com");
                         psInsert.setString(3, PasswordUtil.hashPassword("Admin@123"));
@@ -94,7 +92,7 @@ public class AppContextListener implements ServletContextListener {
                     sellerId = rs.getLong("id");
                 } else {
                     try (PreparedStatement psInsert = conn.prepareStatement(
-                            "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, 'SELLER');", Statement.RETURN_GENERATED_KEYS)) {
+                            "INSERT INTO users (name, email, password_hash, role, phone) VALUES (?, ?, ?, 'SELLER', '9876500000');", Statement.RETURN_GENERATED_KEYS)) {
                         psInsert.setString(1, "Verified Tech Seller");
                         psInsert.setString(2, "seller@abishmart.com");
                         psInsert.setString(3, PasswordUtil.hashPassword("Seller@123"));
@@ -108,24 +106,42 @@ public class AppContextListener implements ServletContextListener {
                 }
             }
 
-            // Seed default Product Catalog
+            // Seed Coupons
+            record SeedCoupon(String code, String type, double val, double minOrder) {}
+            SeedCoupon[] coupons = new SeedCoupon[] {
+                new SeedCoupon("WELCOME10", "PERCENT", 10.0, 500.0),
+                new SeedCoupon("FESTIVE20", "PERCENT", 20.0, 1500.0),
+                new SeedCoupon("SUPER500", "FLAT", 500.0, 2999.0),
+                new SeedCoupon("LUCKY15", "PERCENT", 15.0, 0.0)
+            };
+            for (SeedCoupon sc : coupons) {
+                try (PreparedStatement ps = conn.prepareStatement("MERGE INTO coupons (code, discount_type, discount_value, min_order_amount) KEY(code) VALUES (?, ?, ?, ?);")) {
+                    ps.setString(1, sc.code());
+                    ps.setString(2, sc.type());
+                    ps.setDouble(3, sc.val());
+                    ps.setDouble(4, sc.minOrder());
+                    ps.executeUpdate();
+                } catch (Exception ignored) {}
+            }
+
+            // Seed Product Catalog
             if (sellerId > 0) {
                 try (PreparedStatement psCheck = conn.prepareStatement("SELECT COUNT(*) FROM products;")) {
                     ResultSet rs = psCheck.executeQuery();
                     if (rs.next() && rs.getInt(1) == 0) {
-                        record SeedItem(String name, String desc, double price, int stock, String categoryName, String img) {}
+                        record SeedItem(String name, String desc, double origPrice, double price, int stock, String categoryName, String img) {}
 
                         SeedItem[] items = new SeedItem[] {
-                            new SeedItem("Wireless Mechanical Keyboard", "RGB backlit tactile mechanical switches with multi-device Bluetooth connectivity.", 4499.00, 15, "Electronics", "images/keyboard.jpg"),
-                            new SeedItem("Noise-Cancelling Headphones", "Active noise cancelling with 40-hour battery life and spatial audio.", 12999.00, 10, "Electronics", "images/headphones.jpg"),
-                            new SeedItem("Pro Fitness Smartwatch", "Heart rate monitor, GPS tracking, and AMOLED display.", 6999.00, 12, "Electronics", "images/smartwatch.jpg"),
-                            new SeedItem("4K Ultra-HD Vlog Camera", "Compact vlog camera with 4K recording, flip LCD screen, and directional microphone.", 42500.00, 6, "Electronics", "images/camera.jpg"),
-                            new SeedItem("Italian Espresso Maker", "Premium 15-bar pump espresso & cappuccino machine for home kitchen.", 14999.00, 8, "Home", "images/coffeemaker.jpg"),
-                            new SeedItem("Digital Touchscreen Air Fryer 5.5L", "Rapid hot air circulation 5.5L digital air fryer with 8 preset cooking modes.", 7499.00, 14, "Home", "images/airfryer.jpg"),
-                            new SeedItem("Ultra Cushion Athletic Sneakers", "Lightweight breathable mesh running shoes for maximum daily comfort.", 3499.00, 20, "Fashion", "images/sneakers.jpg"),
-                            new SeedItem("Waterproof All-Weather Hiking Jacket", "Windproof and waterproof outdoor hooded shell jacket for trekking and winter wear.", 5999.00, 11, "Fashion", "images/jacket.jpg"),
-                            new SeedItem("Mastering Modern Software Engineering", "Complete guide to cloud architecture, system design, microservices, and clean code.", 1850.00, 25, "Books", "images/books.jpg"),
-                            new SeedItem("Adjustable Dumbbell Set (20kg)", "Solid iron weight plates with non-slip chrome handles for home gym workouts.", 8999.00, 9, "Fitness", "images/dumbbell.jpg")
+                            new SeedItem("Wireless Mechanical Keyboard", "RGB backlit tactile mechanical switches with multi-device Bluetooth connectivity.", 5999.00, 4499.00, 15, "Electronics", "images/keyboard.jpg"),
+                            new SeedItem("Noise-Cancelling Headphones", "Active noise cancelling with 40-hour battery life and spatial audio sound profile.", 15999.00, 12999.00, 10, "Electronics", "images/headphones.jpg"),
+                            new SeedItem("Pro Fitness Smartwatch", "Heart rate monitor, GPS tracking, sleep tracking, and AMOLED color display.", 8999.00, 6999.00, 12, "Electronics", "images/smartwatch.jpg"),
+                            new SeedItem("4K Ultra-HD Vlog Camera", "Compact vlog camera with 4K recording, flip LCD screen, and directional microphone.", 49999.00, 42500.00, 6, "Electronics", "images/camera.jpg"),
+                            new SeedItem("Italian Espresso Maker", "Premium 15-bar pump espresso & cappuccino machine for home kitchen.", 18999.00, 14999.00, 8, "Home", "images/coffeemaker.jpg"),
+                            new SeedItem("Digital Touchscreen Air Fryer 5.5L", "Rapid hot air circulation 5.5L digital air fryer with 8 preset cooking modes.", 9999.00, 7499.00, 14, "Home", "images/airfryer.jpg"),
+                            new SeedItem("Ultra Cushion Athletic Sneakers", "Lightweight breathable mesh running shoes for maximum daily comfort.", 4999.00, 3499.00, 20, "Fashion", "images/sneakers.jpg"),
+                            new SeedItem("Waterproof All-Weather Hiking Jacket", "Windproof and waterproof outdoor hooded shell jacket for trekking and winter wear.", 7999.00, 5999.00, 11, "Fashion", "images/jacket.jpg"),
+                            new SeedItem("Mastering Modern Software Engineering", "Complete guide to cloud architecture, system design, microservices, and clean code.", 2499.00, 1850.00, 25, "Books", "images/books.jpg"),
+                            new SeedItem("Adjustable Dumbbell Set (20kg)", "Solid iron weight plates with non-slip chrome handles for home gym workouts.", 11999.00, 8999.00, 9, "Fitness", "images/dumbbell.jpg")
                         };
 
                         for (SeedItem item : items) {
@@ -136,19 +152,34 @@ public class AppContextListener implements ServletContextListener {
                                 if (rsCat.next()) catId = rsCat.getLong("id");
                             }
 
+                            long prodId = 0;
                             try (PreparedStatement psProd = conn.prepareStatement(
-                                    "INSERT INTO products (seller_id, category_id, name, description, price, stock, image_url) VALUES (?, ?, ?, ?, ?, ?, ?);")) {
+                                    "INSERT INTO products (seller_id, category_id, name, description, original_price, price, stock, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?);", Statement.RETURN_GENERATED_KEYS)) {
                                 psProd.setLong(1, sellerId);
                                 psProd.setLong(2, catId);
                                 psProd.setString(3, item.name());
                                 psProd.setString(4, item.desc());
-                                psProd.setDouble(5, item.price());
-                                psProd.setInt(6, item.stock());
-                                psProd.setString(7, item.img());
+                                psProd.setDouble(5, item.origPrice());
+                                psProd.setDouble(6, item.price());
+                                psProd.setInt(7, item.stock());
+                                psProd.setString(8, item.img());
                                 psProd.executeUpdate();
+                                ResultSet keys = psProd.getGeneratedKeys();
+                                if (keys.next()) prodId = keys.getLong(1);
+                            }
+
+                            // Seed a sample customer review
+                            if (prodId > 0) {
+                                try (PreparedStatement psRev = conn.prepareStatement(
+                                        "INSERT INTO reviews (product_id, user_id, user_name, rating, comment, image_url) VALUES (?, ?, 'Verified Buyer', 5, 'Exceptional quality product! Exactly as described in INR.', ?);")) {
+                                    psRev.setLong(1, prodId);
+                                    psRev.setLong(2, sellerId);
+                                    psRev.setString(3, item.img());
+                                    psRev.executeUpdate();
+                                } catch (Exception ignored) {}
                             }
                         }
-                        logger.info("Seeded 10 default products in Rupees INR.");
+                        logger.info("Seeded default product catalog with MRP prices and reviews in Rupees INR.");
                     }
                 }
             }

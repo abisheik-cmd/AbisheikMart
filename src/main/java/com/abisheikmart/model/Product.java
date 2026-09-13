@@ -13,9 +13,12 @@ public class Product implements Serializable {
     private String categoryName;
     private String name;
     private String description;
+    private Double originalPrice;
     private Double price;
     private Integer stock;
     private String imageUrl;
+    private Double averageRating;
+    private Integer reviewCount;
     private Timestamp createdAt;
 
     public Product() {}
@@ -41,6 +44,9 @@ public class Product implements Serializable {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
+    public Double getOriginalPrice() { return originalPrice != null ? originalPrice : (price != null ? price : 0.0); }
+    public void setOriginalPrice(Double originalPrice) { this.originalPrice = originalPrice; }
+
     public Double getPrice() { return price; }
     public void setPrice(Double price) { this.price = price; }
 
@@ -50,6 +56,23 @@ public class Product implements Serializable {
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
+    public Double getAverageRating() { return averageRating != null ? averageRating : 0.0; }
+    public void setAverageRating(Double averageRating) { this.averageRating = averageRating; }
+
+    public Integer getReviewCount() { return reviewCount != null ? reviewCount : 0; }
+    public void setReviewCount(Integer reviewCount) { this.reviewCount = reviewCount; }
+
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+
+    public boolean hasDiscount() {
+        return originalPrice != null && price != null && originalPrice > price;
+    }
+
+    public int getDiscountPercentage() {
+        if (hasDiscount() && originalPrice > 0) {
+            return (int) Math.round(((originalPrice - price) / originalPrice) * 100);
+        }
+        return 0;
+    }
 }

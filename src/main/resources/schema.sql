@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(150) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     role VARCHAR(20) NOT NULL CHECK (role IN ('CUSTOMER', 'SELLER', 'ADMIN')),
+    phone VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -24,6 +25,7 @@ CREATE TABLE IF NOT EXISTS products (
     category_id BIGINT NOT NULL,
     name VARCHAR(200) NOT NULL,
     description TEXT,
+    original_price DECIMAL(10, 2) NOT NULL DEFAULT 0.00 CHECK (original_price >= 0),
     price DECIMAL(10, 2) NOT NULL CHECK (price >= 0),
     stock INT NOT NULL CHECK (stock >= 0),
     image_url VARCHAR(255),
@@ -58,6 +60,11 @@ CREATE TABLE IF NOT EXISTS orders (
     user_id BIGINT NOT NULL,
     total_amount DECIMAL(10, 2) NOT NULL CHECK (total_amount >= 0),
     status VARCHAR(30) NOT NULL DEFAULT 'PLACED' CHECK (status IN ('PLACED', 'SHIPPED', 'DELIVERED', 'CANCELLED')),
+    delivery_address TEXT,
+    phone_number VARCHAR(20),
+    payment_method VARCHAR(50) DEFAULT 'CASH_ON_DELIVERY',
+    coupon_code VARCHAR(50),
+    discount_amount DECIMAL(10, 2) DEFAULT 0.00,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -77,9 +84,54 @@ CREATE TABLE IF NOT EXISTS order_items (
     FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- 8. COUPONS TABLE
+CREATE TABLE IF NOT EXISTS coupons (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    discount_type VARCHAR(20) NOT NULL CHECK (discount_type IN ('PERCENT', 'FLAT')),
+    discount_value DECIMAL(10, 2) NOT NULL CHECK (discount_value > 0),
+    min_order_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 9. REVIEWS TABLE
+CREATE TABLE IF NOT EXISTS reviews (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    product_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    user_name VARCHAR(100) NOT NULL,
+    rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT NOT NULL,
+    image_url VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- 10. NOTIFICATIONS TABLE
+CREATE TABLE IF NOT EXISTS notifications (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    title VARCHAR(150) NOT NULL,
+    message TEXT NOT NULL,
+    link VARCHAR(255),
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- 11. USER_OTPS TABLE
+CREATE TABLE IF NOT EXISTS user_otps (
+    phone_number VARCHAR(20) PRIMARY KEY,
+    otp_code VARCHAR(6) NOT NULL,
+    expires_at TIMESTAMP NOT NULL
+);
+
 -- INDEXES
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
 CREATE INDEX IF NOT EXISTS idx_products_seller ON products(seller_id);
 CREATE INDEX IF NOT EXISTS idx_cart_items_cart ON cart_items(cart_id);
 CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews(product_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);

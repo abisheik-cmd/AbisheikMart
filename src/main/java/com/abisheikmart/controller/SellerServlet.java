@@ -121,7 +121,11 @@ public class SellerServlet extends HttpServlet {
                 }
                 pReq.setName(req.getParameter("name"));
                 pReq.setDescription(req.getParameter("description"));
-                pReq.setPrice(Double.parseDouble(req.getParameter("price")));
+                String origPriceStr = req.getParameter("originalPrice");
+                double price = Double.parseDouble(req.getParameter("price"));
+                double origPrice = (origPriceStr != null && !origPriceStr.isBlank()) ? Double.parseDouble(origPriceStr) : price;
+                pReq.setOriginalPrice(origPrice);
+                pReq.setPrice(price);
                 pReq.setStock(Integer.parseInt(req.getParameter("stock")));
                 pReq.setCategoryId(Long.parseLong(req.getParameter("categoryId")));
                 pReq.setImageUrl(req.getParameter("imageUrl"));
@@ -145,4 +149,3 @@ public class SellerServlet extends HttpServlet {
         }
     }
 }
-

@@ -3,8 +3,10 @@ package com.abisheikmart.controller;
 import com.abisheikmart.dto.ApiResponse;
 import com.abisheikmart.model.Category;
 import com.abisheikmart.model.Product;
+import com.abisheikmart.model.Review;
 import com.abisheikmart.service.CategoryService;
 import com.abisheikmart.service.ProductService;
+import com.abisheikmart.service.ReviewService;
 import com.abisheikmart.util.JsonUtil;
 
 import javax.servlet.ServletException;
@@ -21,6 +23,7 @@ public class CatalogServlet extends HttpServlet {
 
     private final ProductService productService = new ProductService();
     private final CategoryService categoryService = new CategoryService();
+    private final ReviewService reviewService = new ReviewService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -40,8 +43,11 @@ public class CatalogServlet extends HttpServlet {
                     Long id = Long.parseLong(idStr);
                     Optional<Product> pOpt = productService.getProductById(id);
                     if (pOpt.isPresent()) {
-                        req.setAttribute("product", pOpt.get());
-                        req.setAttribute("pageTitle", pOpt.get().getName() + " - AbisheikMart 2.0");
+                        Product p = pOpt.get();
+                        List<Review> reviews = reviewService.getProductReviews(id);
+                        req.setAttribute("product", p);
+                        req.setAttribute("reviews", reviews);
+                        req.setAttribute("pageTitle", p.getName() + " - AbisheikMart 2.0");
                         req.getRequestDispatcher("/WEB-INF/views/catalog/product-detail.jsp").forward(req, resp);
                         return;
                     }
@@ -58,9 +64,11 @@ public class CatalogServlet extends HttpServlet {
 
         List<Product> products = productService.searchProducts(query, category, sort);
         List<Category> categories = categoryService.getAllCategories();
+        List<Product> recommendations = productService.getRecommendations(4L);
 
         req.setAttribute("products", products);
         req.setAttribute("categories", categories);
+        req.setAttribute("recommendations", recommendations);
         req.setAttribute("selectedCategory", category != null ? category : "ALL");
         req.setAttribute("selectedSort", sort != null ? sort : "newest");
         req.setAttribute("pageTitle", "Product Catalog - AbisheikMart 2.0");
@@ -68,4 +76,3 @@ public class CatalogServlet extends HttpServlet {
         req.getRequestDispatcher("/WEB-INF/views/catalog/browse.jsp").forward(req, resp);
     }
 }
-
