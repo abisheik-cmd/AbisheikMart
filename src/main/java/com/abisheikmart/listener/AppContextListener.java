@@ -49,8 +49,13 @@ public class AppContextListener implements ServletContextListener {
                 if (is != null) {
                     String sql = new String(is.readAllBytes());
                     for (String statement : sql.split(";")) {
-                        if (!statement.trim().isEmpty()) {
-                            stmt.execute(statement);
+                        String trimmed = statement.trim();
+                        if (!trimmed.isEmpty()) {
+                            try {
+                                stmt.execute(trimmed);
+                            } catch (Exception e) {
+                                logger.warn("Schema statement warning [{}]: {}", trimmed, e.getMessage());
+                            }
                         }
                     }
                     logger.info("Database schema applied successfully.");

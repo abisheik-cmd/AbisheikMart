@@ -1,6 +1,6 @@
 #FileLock
-#Sat Sep 12 12:09:34 IST 2026
+#Sun Sep 13 23:35:32 IST 2026
 hostName=Abizk__
-id=1a09457c0561bf35b3bc1bdad8e70975b4c97ac08b7
+id=1a09bf21b178d998a6157d9dd68916effe1ea74c9dd
 method=file
-server=10.113.138.82\:52946
+server=192.168.1.4\:64038

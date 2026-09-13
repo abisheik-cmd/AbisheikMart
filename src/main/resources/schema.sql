@@ -127,6 +127,15 @@ CREATE TABLE IF NOT EXISTS user_otps (
     expires_at TIMESTAMP NOT NULL
 );
 
+-- MIGRATIONS FOR EXISTING DATABASES
+ALTER TABLE products ADD COLUMN IF NOT EXISTS original_price DECIMAL(10, 2) DEFAULT 0.00;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_address TEXT;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS phone_number VARCHAR(20);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50) DEFAULT 'CASH_ON_DELIVERY';
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_code VARCHAR(50);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_amount DECIMAL(10, 2) DEFAULT 0.00;
+ALTER TABLE order_items ADD COLUMN IF NOT EXISTS seller_id BIGINT;
+
 -- INDEXES
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
 CREATE INDEX IF NOT EXISTS idx_products_seller ON products(seller_id);
@@ -135,3 +144,4 @@ CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews(product_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
+
