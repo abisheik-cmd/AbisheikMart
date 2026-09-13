@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-@WebServlet(urlPatterns = {"/catalog", "/catalog/detail", "/api/products"})
+@WebServlet(urlPatterns = {"/", "/catalog", "/catalog/detail", "/api/products", "/abisheikmart", "/abisheikmart/*"})
 public class CatalogServlet extends HttpServlet {
 
     private final ProductService productService = new ProductService();
@@ -36,7 +36,7 @@ public class CatalogServlet extends HttpServlet {
             return;
         }
 
-        if ("/catalog/detail".equals(path)) {
+        if ("/catalog/detail".equals(path) || path.endsWith("/detail")) {
             String idStr = req.getParameter("id");
             if (idStr != null) {
                 try {
@@ -53,7 +53,7 @@ public class CatalogServlet extends HttpServlet {
                     }
                 } catch (NumberFormatException ignored) {}
             }
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            resp.sendRedirect(req.getContextPath() + "/catalog");
             return;
         }
 
