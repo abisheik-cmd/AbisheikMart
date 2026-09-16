@@ -2,6 +2,7 @@ target/
 .mvn/wrapper/maven-wrapper.jar
 *.class
 logs/
+data/
 *.mv.db
 *.trace.db
-
+*.lock.db

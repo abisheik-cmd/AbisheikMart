@@ -8,7 +8,9 @@
 <script src="${pageContext.request.contextPath}/js/app.js"></script>
 <script src="${pageContext.request.contextPath}/js/cart-ajax.js"></script>
 <script src="${pageContext.request.contextPath}/js/seller-ajax.js"></script>
-<script src="${pageContext.request.contextPath}/js/features.js"></script>
+<script src="${pageContext.request.contextPath}/js/checkout-enhanced.js"></script>
+<script src="${pageContext.request.contextPath}/js/luckydraw.js"></script>
+<script src="${pageContext.request.contextPath}/js/notifications.js"></script>
+<script src="${pageContext.request.contextPath}/js/review.js"></script>
 </body>
 </html>
-

@@ -26,18 +26,22 @@
             </c:if>
 
             <div class="form-group">
-                <label for="prod-name">Product Name</label>
+                <label for="prod-name">Product Title / Name</label>
                 <input type="text" id="prod-name" name="name" class="form-control" value="${product != null ? product.name : ''}" placeholder="e.g. Wireless Mechanical Keyboard" required>
             </div>
 
             <div class="form-group">
-                <label for="prod-desc">Description</label>
+                <label for="prod-desc">Product Description</label>
                 <textarea id="prod-desc" name="description" class="form-control" rows="3" placeholder="Detailed product description...">${product != null ? product.description : ''}</textarea>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
                 <div class="form-group">
-                    <label for="prod-price">Price (Rupees INR)</label>
+                    <label for="prod-orig-price">Original MRP (₹)</label>
+                    <input type="number" id="prod-orig-price" name="originalPrice" class="form-control" step="0.01" min="0" value="${product != null ? product.originalPrice : ''}" placeholder="5999">
+                </div>
+                <div class="form-group">
+                    <label for="prod-price">Selling Price (₹)</label>
                     <input type="number" id="prod-price" name="price" class="form-control" step="0.01" min="0" value="${product != null ? product.price : ''}" placeholder="4499" required>
                 </div>
                 <div class="form-group">
@@ -79,4 +83,3 @@
 </main>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />
-

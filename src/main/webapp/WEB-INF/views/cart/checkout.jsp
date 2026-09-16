@@ -5,10 +5,10 @@
 <jsp:include page="/WEB-INF/views/common/header.jsp" />
 <jsp:include page="/WEB-INF/views/common/navbar.jsp" />
 
-<main class="main-content" style="max-width: 720px; margin: 2rem auto;">
+<main class="main-content" style="max-width: 780px; margin: 2rem auto;">
     <div style="margin-bottom: 1.5rem;">
-        <h2 style="font-size: 1.8rem; font-weight: 800;">Order Checkout</h2>
-        <p style="color: var(--text-secondary); font-size: 0.9rem;">Review your order, apply coupons, and confirm delivery details.</p>
+        <h2 style="font-size: 1.8rem; font-weight: 800; color: #fff;">Order Checkout (INR ₹)</h2>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">Review items, enter delivery address, verify mobile OTP, and choose your payment method.</p>
     </div>
 
     <c:if test="${not empty errorMessage}">
@@ -21,10 +21,10 @@
 
         <!-- Order Summary Card -->
         <div style="background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 1.5rem;">
-            <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem; color: var(--accent-cyan);">📋 Order Summary</h3>
+            <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem; color: var(--accent-cyan);">📋 Order Items Summary</h3>
 
             <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1rem; margin-bottom: 1rem;">
-                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.4rem;">Customer</div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.4rem;">Buyer Account</div>
                 <div style="font-weight: 700; color: #fff;">${sessionScope.user.name}</div>
                 <div style="font-size: 0.82rem; color: var(--text-muted);">${sessionScope.user.email}</div>
             </div>
@@ -46,40 +46,40 @@
                 <span style="color: var(--text-secondary);">Subtotal</span>
                 <span style="font-weight: 600; color: #fff;">₹<fmt:formatNumber value="${cart.grandTotal}" pattern="#,##0.00" /></span>
             </div>
-            <!-- Discount row (hidden until coupon applied) -->
+            <!-- Discount row -->
             <div id="checkout-discount-row" style="display: none; justify-content: space-between; padding: 0.5rem 0; font-size: 1rem;">
-                <span style="color: var(--accent-amber);">🏷️ Coupon Discount</span>
-                <span id="checkout-discount-amount" style="font-weight: 600; color: var(--accent-amber);">-₹0.00</span>
+                <span style="color: #f59e0b;">🏷️ Applied Coupon Discount</span>
+                <span id="checkout-discount-amount" style="font-weight: 600; color: #f59e0b;">-₹0.00</span>
             </div>
             <!-- Grand Total -->
             <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 800; border-top: 2px solid var(--glass-border); padding-top: 1rem; margin-top: 0.5rem;">
-                <span>Grand Total (INR)</span>
+                <span style="color: #fff;">Grand Total (INR)</span>
                 <span id="checkout-grand-total" style="color: var(--accent-green);">₹<fmt:formatNumber value="${cart.grandTotal}" pattern="#,##0.00" /></span>
             </div>
         </div>
 
         <!-- Coupon Section -->
         <div style="background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 1.5rem;">
-            <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem; color: var(--accent-amber);">🏷️ Apply Coupon Code</h3>
+            <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem; color: #f59e0b;">🏷️ Offers & Coupon Code</h3>
             <div style="display: flex; gap: 0.8rem;">
-                <input type="text" id="coupon-code-input" placeholder="e.g. WELCOME10, FESTIVE20, SUPER500"
+                <input type="text" id="coupon-code-input" placeholder="e.g. WELCOME10, FESTIVE20, SUPER500, LUCKY15"
                        style="flex: 1; background: rgba(15,23,42,0.7); border: 1px solid var(--glass-border); border-radius: 10px; padding: 0.7rem 1rem; color: #fff; font-size: 0.95rem; text-transform: uppercase;">
-                <button type="button" class="btn btn-warning" onclick="applyCouponCheckout()" style="white-space: nowrap;">Apply Coupon</button>
+                <button type="button" class="btn btn-warning" onclick="applyCouponCheckout(${cart.grandTotal})" style="white-space: nowrap;">Apply Coupon</button>
             </div>
             <div id="coupon-status-msg" style="margin-top: 0.6rem; font-size: 0.85rem;"></div>
         </div>
 
         <!-- Delivery Details & Payment Form -->
         <div style="background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 1.5rem;">
-            <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 1.2rem; color: var(--accent-cyan);">🚚 Delivery Details</h3>
+            <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 1.2rem; color: var(--accent-cyan);">🚚 Shipping Address & Mobile Verification</h3>
 
             <form id="checkout-form" onsubmit="submitCheckoutForm(event)">
                 <input type="hidden" id="checkout-coupon-code" name="couponCode" value="">
 
                 <div style="margin-bottom: 1.1rem;">
-                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.5rem;">Delivery Address *</label>
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.5rem;">Full Delivery Address *</label>
                     <textarea id="delivery-address" name="deliveryAddress" rows="3" required
-                              placeholder="Full delivery address including Flat/House No, Street, City, State, PIN..."
+                              placeholder="Flat / House No, Street Address, Area, City, State, PIN code..."
                               style="width: 100%; background: rgba(15,23,42,0.7); border: 1px solid var(--glass-border); border-radius: 10px; padding: 0.7rem 1rem; color: #fff; font-size: 0.9rem; resize: vertical;"></textarea>
                 </div>
 
@@ -100,17 +100,35 @@
                                style="flex: 1; background: rgba(15,23,42,0.7); border: 1px solid var(--glass-border); border-radius: 10px; padding: 0.7rem 1rem; color: #fff; font-size: 0.9rem; letter-spacing: 0.3rem; text-align: center;">
                         <button type="button" class="btn btn-primary" onclick="verifyOtpCheckout()">Verify OTP</button>
                     </div>
-                    <div id="otp-status-msg" style="margin-top: 0.5rem; font-size: 0.82rem;"></div>
+                    <div id="otp-status-msg" style="margin-top: 0.5rem; font-size: 0.85rem;"></div>
                 </div>
 
                 <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.5rem;">Payment Method</label>
-                    <select id="payment-method-select" name="paymentMethod"
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.5rem;">Payment Method *</label>
+                    <select id="payment-method-select" name="paymentMethod" onchange="togglePaymentFields()"
                             style="width: 100%; background: rgba(15,23,42,0.7); border: 1px solid var(--glass-border); border-radius: 10px; padding: 0.7rem 1rem; color: #fff; font-size: 0.9rem;">
+                        <option value="UPI">📱 Online Payment — UPI / GPay / PhonePe / QR</option>
+                        <option value="NETBANKING">🏦 Online Payment — Net Banking</option>
                         <option value="CASH_ON_DELIVERY">💵 Cash on Delivery (COD)</option>
-                        <option value="UPI">📱 UPI / QR Payment</option>
-                        <option value="CARD">💳 Debit / Credit Card</option>
-                        <option value="NETBANKING">🏦 Net Banking</option>
+                    </select>
+                </div>
+
+                <!-- UPI Detail field -->
+                <div id="upi-details-box" style="margin-bottom: 1.5rem; background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 10px; border: 1px solid var(--glass-border);">
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.4rem;">Enter UPI ID / VPA</label>
+                    <input type="text" placeholder="e.g., buyer@upi or name@okaxis" style="width: 100%; background: rgba(15,23,42,0.8); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.6rem 0.9rem; color: #fff;">
+                    <div style="font-size: 0.8rem; color: var(--accent-cyan); margin-top: 0.4rem;">⚡ Instant verification via UPI gateway</div>
+                </div>
+
+                <!-- Net Banking field -->
+                <div id="netbanking-details-box" style="display: none; margin-bottom: 1.5rem; background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 10px; border: 1px solid var(--glass-border);">
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.4rem;">Select Bank</label>
+                    <select style="width: 100%; background: rgba(15,23,42,0.8); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.6rem 0.9rem; color: #fff;">
+                        <option>State Bank of India (SBI)</option>
+                        <option>HDFC Bank</option>
+                        <option>ICICI Bank</option>
+                        <option>Axis Bank</option>
+                        <option>Kotak Mahindra Bank</option>
                     </select>
                 </div>
 
