@@ -45,9 +45,14 @@
             </div>
         </c:if>
 
-        <c:if test="${sessionScope.user != null && (sessionScope.user.role == 'SELLER' || sessionScope.user.role == 'ADMIN')}">
+        <c:if test="${sessionScope.user != null && sessionScope.user.role == 'SELLER'}">
             <a href="${pageContext.request.contextPath}/seller/dashboard" class="nav-item ${activeNav == 'seller' ? 'active' : ''}">
                 <span>📊</span> Seller Dashboard
+            </a>
+        </c:if>
+        <c:if test="${sessionScope.user != null && sessionScope.user.role == 'ADMIN'}">
+            <a href="${pageContext.request.contextPath}/admin" class="nav-item ${activeNav == 'admin' ? 'active' : ''}">
+                <span>🛡️</span> Admin Dashboard
             </a>
         </c:if>
 

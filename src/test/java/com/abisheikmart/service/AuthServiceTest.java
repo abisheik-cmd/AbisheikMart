@@ -99,5 +99,21 @@ class AuthServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> authService.login(req));
     }
-}
 
+    @Test
+    @DisplayName("Inactive account cannot log in")
+    void testInactiveAccountBlocked() {
+        LoginRequest req = new LoginRequest();
+        req.setEmail("inactive@example.com");
+        req.setPassword("CorrectPass123");
+
+        User inactive = new User();
+        inactive.setEmail("inactive@example.com");
+        inactive.setPasswordHash(PasswordUtil.hashPassword("CorrectPass123"));
+        inactive.setRole("CUSTOMER");
+        inactive.setActive(false);
+        org.mockito.Mockito.when(userDao.findByEmail("inactive@example.com")).thenReturn(Optional.of(inactive));
+
+        assertThrows(IllegalArgumentException.class, () -> authService.login(req));
+    }
+}

@@ -17,7 +17,7 @@ public class ProductDao {
     private static final String BASE_SELECT = """
         SELECT p.id, p.seller_id, u.name AS seller_name, p.category_id, c.name AS category_name,
                p.name, p.description, COALESCE(p.original_price, p.price) AS original_price, p.price, p.stock,
-               COALESCE(p.image_url, '') AS image_url, p.created_at,
+               COALESCE(p.image_url, '') AS image_url, p.active, p.created_at,
                COALESCE(AVG(r.rating), 0.0) AS avg_rating,
                COUNT(r.id) AS review_count
         FROM products p
@@ -26,11 +26,11 @@ public class ProductDao {
         LEFT JOIN reviews r ON p.id = r.product_id
     """;
 
-    private static final String GROUP_BY = " GROUP BY p.id, p.seller_id, u.name, p.category_id, c.name, p.name, p.description, p.original_price, p.price, p.stock, p.image_url, p.created_at ";
+    private static final String GROUP_BY = " GROUP BY p.id, p.seller_id, u.name, p.category_id, c.name, p.name, p.description, p.original_price, p.price, p.stock, p.image_url, p.active, p.created_at ";
 
     public List<Product> findAll() {
         List<Product> list = new ArrayList<>();
-        String sql = BASE_SELECT + GROUP_BY + " ORDER BY p.id DESC;";
+        String sql = BASE_SELECT + " WHERE p.active = TRUE" + GROUP_BY + " ORDER BY p.id DESC;";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -85,6 +85,44 @@ public class ProductDao {
         return countBySellerId(sellerId);
     }
 
+    public List<Product> findAdminProducts(String search, Long categoryId, Long sellerId, Boolean active) {
+        StringBuilder sql = new StringBuilder(BASE_SELECT).append(" WHERE 1=1 ");
+        List<Object> parameters = new ArrayList<>();
+        if (search != null && !search.isBlank()) {
+            sql.append(" AND (LOWER(p.name) LIKE ? OR LOWER(p.description) LIKE ? OR LOWER(u.name) LIKE ?)");
+            String pattern = "%" + search.trim().toLowerCase() + "%";
+            parameters.add(pattern); parameters.add(pattern); parameters.add(pattern);
+        }
+        if (categoryId != null) { sql.append(" AND p.category_id = ?"); parameters.add(categoryId); }
+        if (sellerId != null) { sql.append(" AND p.seller_id = ?"); parameters.add(sellerId); }
+        if (active != null) { sql.append(" AND p.active = ?"); parameters.add(active); }
+        sql.append(GROUP_BY).append(" ORDER BY p.id DESC");
+        List<Product> products = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < parameters.size(); i++) ps.setObject(i + 1, parameters.get(i));
+            try (ResultSet rs = ps.executeQuery()) { while (rs.next()) products.add(mapProduct(rs)); }
+        } catch (SQLException e) { logger.error("Error finding admin products", e); }
+        return products;
+    }
+
+    public boolean updateProductStatus(Long productId, boolean active) throws SQLException {
+        String sql = "UPDATE products SET active = ? WHERE id = ?";
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBoolean(1, active); ps.setLong(2, productId);
+            return ps.executeUpdate() == 1;
+        }
+    }
+
+    public long countProducts() { return countProducts("SELECT COUNT(*) FROM products"); }
+    public long countActiveProducts() { return countProducts("SELECT COUNT(*) FROM products WHERE active = TRUE"); }
+    public long countInactiveProducts() { return countProducts("SELECT COUNT(*) FROM products WHERE active = FALSE"); }
+
+    private long countProducts(String sql) {
+        try (Connection conn = DBUtil.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+            return rs.next() ? rs.getLong(1) : 0L;
+        } catch (SQLException e) { logger.error("Error counting products", e); return 0L; }
+    }
+
     private long count(String sql, Long sellerId) {
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, sellerId);
@@ -99,7 +137,7 @@ public class ProductDao {
 
     public List<Product> findByCategoryId(Long categoryId) {
         List<Product> list = new ArrayList<>();
-        String sql = BASE_SELECT + " WHERE p.category_id = ?" + GROUP_BY + " ORDER BY p.id DESC;";
+        String sql = BASE_SELECT + " WHERE p.category_id = ? AND p.active = TRUE" + GROUP_BY + " ORDER BY p.id DESC;";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, categoryId);
@@ -116,7 +154,7 @@ public class ProductDao {
 
     public List<Product> findRecommendations(Long limit) {
         List<Product> list = new ArrayList<>();
-        String sql = BASE_SELECT + GROUP_BY + " ORDER BY avg_rating DESC, p.id DESC LIMIT ?;";
+        String sql = BASE_SELECT + " WHERE p.active = TRUE" + GROUP_BY + " ORDER BY avg_rating DESC, p.id DESC LIMIT ?;";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, limit != null ? limit : 6);
@@ -133,7 +171,7 @@ public class ProductDao {
 
     public List<Product> search(String query, String categoryName, String sortBy) {
         List<Product> list = new ArrayList<>();
-        StringBuilder sql = new StringBuilder(BASE_SELECT).append(" WHERE 1=1 ");
+        StringBuilder sql = new StringBuilder(BASE_SELECT).append(" WHERE p.active = TRUE ");
 
         if (query != null && !query.isBlank()) {
             sql.append(" AND (LOWER(p.name) LIKE ? OR LOWER(p.description) LIKE ? OR LOWER(u.name) LIKE ?) ");
@@ -245,6 +283,7 @@ public class ProductDao {
         p.setPrice(rs.getDouble("price"));
         p.setStock(rs.getInt("stock"));
         p.setImageUrl(rs.getString("image_url"));
+        try { p.setActive(rs.getBoolean("active")); } catch (SQLException ignored) { p.setActive(true); }
         p.setCreatedAt(rs.getTimestamp("created_at"));
         try {
             p.setAverageRating(rs.getDouble("avg_rating"));

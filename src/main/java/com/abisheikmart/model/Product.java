@@ -17,6 +17,7 @@ public class Product implements Serializable {
     private Double price;
     private Integer stock;
     private String imageUrl;
+    private Boolean active = true;
     private Double averageRating;
     private Integer reviewCount;
     private Timestamp createdAt;
@@ -55,6 +56,9 @@ public class Product implements Serializable {
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public Boolean getActive() { return active == null || active; }
+    public void setActive(Boolean active) { this.active = active; }
 
     public Double getAverageRating() { return averageRating != null ? averageRating : 0.0; }
     public void setAverageRating(Double averageRating) { this.averageRating = averageRating; }

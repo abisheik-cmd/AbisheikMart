@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebFilter(urlPatterns = {"/seller/*", "/admin/*", "/api/seller/*", "/api/admin/*"})
+@WebFilter(urlPatterns = {"/seller/*", "/admin", "/admin/*", "/api/seller/*", "/api/admin/*"})
 public class RoleAuthorizationFilter implements Filter {
 
     @Override

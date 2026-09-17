@@ -64,7 +64,7 @@ public class CartDao {
             JOIN products p ON ci.product_id = p.id
             JOIN categories c ON p.category_id = c.id
             JOIN users u ON p.seller_id = u.id
-            WHERE ci.cart_id = ?
+            WHERE ci.cart_id = ? AND p.active = TRUE
             ORDER BY ci.id ASC;
         """;
         try (Connection conn = DBUtil.getConnection();

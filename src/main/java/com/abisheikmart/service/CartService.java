@@ -48,6 +48,9 @@ public class CartService {
         }
 
         Product product = productOpt.get();
+        if (!product.getActive()) {
+            throw new IllegalArgumentException("This product is no longer available for purchase.");
+        }
         if (product.getStock() < quantity) {
             throw new IllegalArgumentException("Insufficient stock available for " + product.getName() + ". Only " + product.getStock() + " left.");
         }
@@ -67,6 +70,9 @@ public class CartService {
         Cart cart = getOrCreateCart(userId);
         if (quantity > 0) {
             Optional<Product> productOpt = productDao.findById(productId);
+            if (productOpt.isPresent() && !productOpt.get().getActive()) {
+                throw new IllegalArgumentException("This product is no longer available for purchase.");
+            }
             if (productOpt.isPresent() && productOpt.get().getStock() < quantity) {
                 throw new IllegalArgumentException("Insufficient stock available. Only " + productOpt.get().getStock() + " left.");
             }
@@ -90,4 +96,3 @@ public class CartService {
         logger.info("Cleared cart for user id: {}", userId);
     }
 }
-

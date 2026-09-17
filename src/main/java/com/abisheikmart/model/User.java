@@ -11,6 +11,7 @@ public class User implements Serializable {
     private String email;
     private String passwordHash;
     private String role; // CUSTOMER, SELLER, ADMIN
+    private Boolean active = true;
     private Timestamp createdAt;
 
     public User() {}
@@ -38,6 +39,9 @@ public class User implements Serializable {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+
+    public Boolean getActive() { return active == null || active; }
+    public void setActive(Boolean active) { this.active = active; }
 
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }

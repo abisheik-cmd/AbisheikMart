@@ -48,7 +48,7 @@ public class OrderDao {
 
             // 2. Insert order items & deduct stock
             String itemSql = "INSERT INTO order_items (order_id, product_id, seller_id, product_name, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?, ?, ?);";
-            String stockSql = "UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?;";
+            String stockSql = "UPDATE products SET stock = stock - ? WHERE id = ? AND active = TRUE AND stock >= ?;";
 
             List<OrderItem> orderItems = new ArrayList<>();
             for (CartItem ci : cartItems) {
@@ -175,6 +175,51 @@ public class OrderDao {
             logger.error("Error finding order by id: {}", orderId, e);
         }
         return Optional.empty();
+    }
+
+    public List<Order> findAllOrders(String search, String status, Long buyerId) {
+        StringBuilder sql = new StringBuilder("SELECT o.id, o.user_id, u.name AS user_name, u.email AS user_email, o.total_amount, o.status, o.delivery_address, o.phone_number, o.payment_method, o.coupon_code, o.discount_amount, o.created_at FROM orders o JOIN users u ON o.user_id = u.id WHERE 1=1");
+        List<Object> parameters = new ArrayList<>();
+        if (search != null && !search.isBlank()) {
+            sql.append(" AND (LOWER(u.name) LIKE ? OR LOWER(u.email) LIKE ? OR CAST(o.id AS VARCHAR) LIKE ?)");
+            String pattern = "%" + search.trim().toLowerCase() + "%";
+            parameters.add(pattern); parameters.add(pattern); parameters.add(pattern);
+        }
+        if (status != null && !status.isBlank() && !"ALL".equalsIgnoreCase(status)) { sql.append(" AND o.status = ?"); parameters.add(status.toUpperCase()); }
+        if (buyerId != null) { sql.append(" AND o.user_id = ?"); parameters.add(buyerId); }
+        sql.append(" ORDER BY o.created_at DESC, o.id DESC");
+        List<Order> orders = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < parameters.size(); i++) ps.setObject(i + 1, parameters.get(i));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) { Order order = mapOrder(rs); order.setItems(findOrderItemsByOrderId(order.getId())); orders.add(order); }
+            }
+        } catch (SQLException e) { logger.error("Error finding admin orders", e); }
+        return orders;
+    }
+
+    public boolean updateOrderStatus(Long orderId, String status) throws SQLException {
+        String sql = "UPDATE orders SET status = ? WHERE id = ?";
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status); ps.setLong(2, orderId);
+            return ps.executeUpdate() == 1;
+        }
+    }
+
+    public long countOrders() { return orderCount("SELECT COUNT(*) FROM orders", null); }
+    public long countOrdersByStatus(String status) { return orderCount("SELECT COUNT(*) FROM orders WHERE status = ?", status); }
+    public double calculateMarketplaceOrderValue() {
+        String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM orders";
+        try (Connection conn = DBUtil.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+            return rs.next() ? rs.getDouble(1) : 0.0;
+        } catch (SQLException e) { logger.error("Error calculating marketplace order value", e); return 0.0; }
+    }
+
+    private long orderCount(String sql, String status) {
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (status != null) ps.setString(1, status);
+            try (ResultSet rs = ps.executeQuery()) { return rs.next() ? rs.getLong(1) : 0L; }
+        } catch (SQLException e) { logger.error("Error counting orders", e); return 0L; }
     }
 
     public List<OrderItem> findOrderItemsByOrderId(Long orderId) {

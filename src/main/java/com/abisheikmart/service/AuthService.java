@@ -63,6 +63,10 @@ public class AuthService {
         }
 
         User user = userOpt.get();
+        if (!user.getActive()) {
+            logger.warn("Login blocked for inactive account: {}", user.getEmail());
+            throw new IllegalArgumentException("This account is inactive. Please contact an administrator.");
+        }
         if (!PasswordUtil.checkPassword(request.getPassword(), user.getPasswordHash())) {
             logger.warn("Failed login attempt for email: {}", request.getEmail());
             throw new IllegalArgumentException("Invalid email or password.");
