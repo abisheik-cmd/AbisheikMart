@@ -11,7 +11,10 @@
             <h2 style="font-size: 1.8rem; font-weight: 800; color: #fff;">Seller Product Dashboard</h2>
             <p style="color: var(--text-secondary); font-size: 0.95rem;">Manage inventory and catalog listings for <strong style="color: var(--accent-cyan);">${sessionScope.user.name}</strong></p>
         </div>
-        <a href="${pageContext.request.contextPath}/seller/product/new" class="btn btn-success" style="text-decoration: none;">+ Add New Product</a>
+        <div style="display: flex; gap: 0.7rem; flex-wrap: wrap;">
+            <a href="${pageContext.request.contextPath}/seller/orders" class="btn btn-secondary" style="text-decoration: none;">View Seller Orders</a>
+            <a href="${pageContext.request.contextPath}/seller/product/new" class="btn btn-success" style="text-decoration: none;">+ Add New Product</a>
+        </div>
     </div>
 
     <!-- Stats Bar -->
@@ -28,7 +31,26 @@
             <div style="color: var(--text-muted); font-size: 0.82rem; font-weight: 700; text-transform: uppercase;">Low Stock Items</div>
             <div style="font-size: 2rem; font-weight: 800; color: var(--accent-amber); margin-top: 0.4rem;">${lowStockCount != null ? lowStockCount : 0}</div>
         </div>
+        <div style="background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 1.4rem; border-radius: var(--radius-md);">
+            <div style="color: var(--text-muted); font-size: 0.82rem; font-weight: 700; text-transform: uppercase;">Seller Orders</div>
+            <div style="font-size: 2rem; font-weight: 800; color: var(--accent-cyan); margin-top: 0.4rem;">${stats != null ? stats.totalOrders : 0}</div>
+        </div>
+        <div style="background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 1.4rem; border-radius: var(--radius-md);">
+            <div style="color: var(--text-muted); font-size: 0.82rem; font-weight: 700; text-transform: uppercase;">Pending Fulfillment</div>
+            <div style="font-size: 2rem; font-weight: 800; color: var(--accent-amber); margin-top: 0.4rem;">${stats != null ? stats.pendingOrders : 0}</div>
+        </div>
     </div>
+
+    <c:if test="${stats != null && not empty stats.recentOrders}">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 0 0 1rem;"><h3 style="color: #fff;">Recent Seller Orders</h3><a href="${pageContext.request.contextPath}/seller/orders" style="color: var(--accent-cyan);">Manage orders →</a></div>
+        <div class="data-table" style="margin-bottom: 2rem;">
+            <c:forEach items="${stats.recentOrders}" var="orderLine">
+                <div style="display: grid; grid-template-columns: 90px 1fr 110px 130px; gap: 1rem; align-items: center; padding: 0.85rem 1rem; border-bottom: 1px solid var(--glass-border);">
+                    <strong style="color: #fff;">#${orderLine.orderId}</strong><span>${orderLine.productName}</span><span>${orderLine.quantity} × ₹${orderLine.unitPrice}</span><span class="card-badge-stock low-stock" style="position: static; text-align: center;">${orderLine.status}</span>
+                </div>
+            </c:forEach>
+        </div>
+    </c:if>
 
     <c:choose>
         <c:when test="${not empty products}">
@@ -94,4 +116,3 @@
 </main>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />
-

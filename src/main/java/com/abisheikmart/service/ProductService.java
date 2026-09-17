@@ -116,11 +116,23 @@ public class ProductService {
         if (req.getName() == null || req.getName().isBlank()) {
             throw new IllegalArgumentException("Product name is required.");
         }
+        if (req.getDescription() != null && req.getDescription().length() > 2000) {
+            throw new IllegalArgumentException("Product description cannot exceed 2000 characters.");
+        }
+        if (req.getCategoryId() == null || req.getCategoryId() <= 0) {
+            throw new IllegalArgumentException("A valid product category is required.");
+        }
         if (req.getPrice() == null || req.getPrice() < 0) {
             throw new IllegalArgumentException("Price must be greater than or equal to 0.");
         }
         if (req.getStock() == null || req.getStock() < 0) {
             throw new IllegalArgumentException("Stock quantity must be greater than or equal to 0.");
+        }
+        if (req.getImageUrl() != null && !req.getImageUrl().isBlank()
+                && !(req.getImageUrl().startsWith("/") || req.getImageUrl().startsWith("http://")
+                || req.getImageUrl().startsWith("https://")
+                || req.getImageUrl().matches("[A-Za-z0-9][A-Za-z0-9._/-]*"))) {
+            throw new IllegalArgumentException("Image path must be a site path or HTTP(S) URL.");
         }
     }
 }

@@ -76,6 +76,27 @@ public class ProductDao {
         return list;
     }
 
+    public long countBySellerId(Long sellerId) {
+        return count("SELECT COUNT(*) FROM products WHERE seller_id = ?", sellerId);
+    }
+
+    public long countActiveBySellerId(Long sellerId) {
+        // This schema has no status column; every persisted product is an active listing.
+        return countBySellerId(sellerId);
+    }
+
+    private long count(String sql, Long sellerId) {
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, sellerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getLong(1) : 0L;
+            }
+        } catch (SQLException e) {
+            logger.error("Error counting seller products for sellerId: {}", sellerId, e);
+            return 0L;
+        }
+    }
+
     public List<Product> findByCategoryId(Long categoryId) {
         List<Product> list = new ArrayList<>();
         String sql = BASE_SELECT + " WHERE p.category_id = ?" + GROUP_BY + " ORDER BY p.id DESC;";

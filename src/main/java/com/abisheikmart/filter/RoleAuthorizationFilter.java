@@ -36,7 +36,7 @@ public class RoleAuthorizationFilter implements Filter {
 
             if (isAdminPath && "ADMIN".equalsIgnoreCase(role)) {
                 isAllowed = true;
-            } else if (isSellerPath && ("SELLER".equalsIgnoreCase(role) || "ADMIN".equalsIgnoreCase(role))) {
+            } else if (isSellerPath && "SELLER".equalsIgnoreCase(role)) {
                 isAllowed = true;
             }
 
@@ -64,4 +64,3 @@ public class RoleAuthorizationFilter implements Filter {
     @Override
     public void destroy() {}
 }
-

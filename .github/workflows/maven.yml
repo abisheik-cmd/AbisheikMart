@@ -21,6 +21,8 @@ jobs:
         distribution: 'temurin'
         cache: 'maven'
 
-    - name: Build and Test with Maven
-      run: mvn -B test package
+    - name: Run required Maven tests
+      run: mvn -B test
 
+    - name: Build WAR
+      run: mvn -B package -DskipTests

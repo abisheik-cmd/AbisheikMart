@@ -3,6 +3,7 @@ package com.abisheikmart.dao;
 import com.abisheikmart.model.CartItem;
 import com.abisheikmart.model.Order;
 import com.abisheikmart.model.OrderItem;
+import com.abisheikmart.model.SellerOrderSummary;
 import com.abisheikmart.util.DBUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -200,6 +201,91 @@ public class OrderDao {
             logger.error("Error finding order items for orderId: {}", orderId, e);
         }
         return list;
+    }
+
+    public List<SellerOrderSummary> findSellerOrderSummaries(Long sellerId) {
+        String sql = "SELECT o.id AS order_id, o.created_at, o.status, o.delivery_address, o.phone_number, "
+                + "u.name AS buyer_name, u.email AS buyer_email, oi.product_id, oi.product_name, oi.quantity, "
+                + "oi.unit_price, oi.subtotal FROM orders o JOIN users u ON u.id = o.user_id "
+                + "JOIN order_items oi ON oi.order_id = o.id WHERE oi.seller_id = ? ORDER BY o.created_at DESC, o.id DESC";
+        return sellerSummaryQuery(sql, sellerId, null);
+    }
+
+    public List<SellerOrderSummary> findSellerOrderSummariesByOrderId(Long orderId, Long sellerId) {
+        String sql = "SELECT o.id AS order_id, o.created_at, o.status, o.delivery_address, o.phone_number, "
+                + "u.name AS buyer_name, u.email AS buyer_email, oi.product_id, oi.product_name, oi.quantity, "
+                + "oi.unit_price, oi.subtotal FROM orders o JOIN users u ON u.id = o.user_id "
+                + "JOIN order_items oi ON oi.order_id = o.id WHERE oi.order_id = ? AND oi.seller_id = ? ORDER BY oi.id";
+        return sellerSummaryQuery(sql, sellerId, orderId);
+    }
+
+    public long countSellerOrders(Long sellerId) {
+        return countSeller("SELECT COUNT(DISTINCT order_id) FROM order_items WHERE seller_id = ?", sellerId);
+    }
+
+    public long countPendingSellerOrders(Long sellerId) {
+        return countSeller("SELECT COUNT(DISTINCT oi.order_id) FROM order_items oi JOIN orders o ON o.id = oi.order_id WHERE oi.seller_id = ? AND o.status = 'PLACED'", sellerId);
+    }
+
+    public boolean updateSellerOrderStatus(Long orderId, Long sellerId, String status) {
+        String sql = "UPDATE orders SET status = ? WHERE id = ? AND EXISTS (SELECT 1 FROM order_items oi WHERE oi.order_id = orders.id AND oi.seller_id = ?)";
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setLong(2, orderId);
+            ps.setLong(3, sellerId);
+            return ps.executeUpdate() == 1;
+        } catch (SQLException e) {
+            logger.error("Error updating seller order status for orderId: {}", orderId, e);
+            return false;
+        }
+    }
+
+    private List<SellerOrderSummary> sellerSummaryQuery(String sql, Long sellerId, Long orderId) {
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (orderId == null) {
+                ps.setLong(1, sellerId);
+            } else {
+                ps.setLong(1, orderId);
+                ps.setLong(2, sellerId);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                List<SellerOrderSummary> list = new ArrayList<>();
+                while (rs.next()) list.add(mapSellerSummary(rs));
+                return list;
+            }
+        } catch (SQLException e) {
+            logger.error("Error finding seller order summaries for sellerId: {}", sellerId, e);
+            return new ArrayList<>();
+        }
+    }
+
+    private long countSeller(String sql, Long sellerId) {
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, sellerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getLong(1) : 0L;
+            }
+        } catch (SQLException e) {
+            logger.error("Error counting seller orders for sellerId: {}", sellerId, e);
+            return 0L;
+        }
+    }
+
+    private SellerOrderSummary mapSellerSummary(ResultSet rs) throws SQLException {
+        SellerOrderSummary summary = new SellerOrderSummary();
+        summary.setOrderId(rs.getLong("order_id"));
+        summary.setOrderDate(rs.getTimestamp("created_at"));
+        summary.setStatus(rs.getString("status"));
+        summary.setDeliveryAddress(rs.getString("delivery_address"));
+        summary.setPhoneNumber(rs.getString("phone_number"));
+        summary.setBuyerName(rs.getString("buyer_name"));
+        summary.setBuyerEmail(rs.getString("buyer_email"));
+        summary.setProductId(rs.getLong("product_id"));
+        summary.setProductName(rs.getString("product_name"));
+        summary.setQuantity(rs.getInt("quantity"));
+        summary.setUnitPrice(rs.getDouble("unit_price"));
+        summary.setSubtotal(rs.getDouble("subtotal"));
+        return summary;
     }
 
     private Order mapOrder(ResultSet rs) throws SQLException {

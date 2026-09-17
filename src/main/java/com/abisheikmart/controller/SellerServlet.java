@@ -1,12 +1,17 @@
 package com.abisheikmart.controller;
 
+import com.abisheikmart.dao.OrderDao;
+import com.abisheikmart.dao.ProductDao;
 import com.abisheikmart.dto.ApiResponse;
 import com.abisheikmart.dto.ProductRequest;
 import com.abisheikmart.model.Category;
 import com.abisheikmart.model.Product;
+import com.abisheikmart.model.SellerDashboardStats;
+import com.abisheikmart.model.SellerOrderSummary;
 import com.abisheikmart.model.User;
 import com.abisheikmart.service.CategoryService;
 import com.abisheikmart.service.ProductService;
+import com.abisheikmart.service.SellerService;
 import com.abisheikmart.util.JsonUtil;
 
 import javax.servlet.ServletException;
@@ -16,136 +21,160 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-@WebServlet(urlPatterns = {"/seller/dashboard", "/seller/product/new", "/seller/product/edit", "/seller/product/save", "/api/seller/product/delete"})
+@WebServlet(urlPatterns = {"/seller/dashboard", "/seller/orders", "/seller/product/new", "/seller/product/edit", "/seller/product/save", "/seller/order/status", "/api/seller/product/delete", "/api/seller/order/status"})
 public class SellerServlet extends HttpServlet {
-
-    private final ProductService productService = new ProductService();
+    private final ProductDao productDao = new ProductDao();
+    private final ProductService productService = new ProductService(productDao);
+    private final SellerService sellerService = new SellerService(productDao, productService, new OrderDao());
     private final CategoryService categoryService = new CategoryService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        HttpSession session = req.getSession(false);
-        User user = (session != null) ? (User) session.getAttribute("user") : null;
-
-        if (user == null || (!"SELLER".equalsIgnoreCase(user.getRole()) && !"ADMIN".equalsIgnoreCase(user.getRole()))) {
-            resp.sendRedirect(req.getContextPath() + "/catalog?error=seller_access_required");
-            return;
-        }
+        User user = requireSeller(req, resp, false);
+        if (user == null) return;
 
         String path = req.getServletPath();
-        List<Category> categories = categoryService.getAllCategories();
-        req.setAttribute("categories", categories);
-
         if ("/seller/product/new".equals(path)) {
             req.setAttribute("product", null);
+            req.setAttribute("categories", categoryService.getAllCategories());
             req.setAttribute("pageTitle", "Add New Product Listing - AbisheikMart 2.0");
             req.getRequestDispatcher("/WEB-INF/views/seller/product-form.jsp").forward(req, resp);
             return;
-
-        } else if ("/seller/product/edit".equals(path)) {
-            String idStr = req.getParameter("id");
-            if (idStr != null) {
-                try {
-                    Long productId = Long.parseLong(idStr);
-                    Optional<Product> pOpt = productService.getProductById(productId);
-                    if (pOpt.isPresent()) {
-                        Product p = pOpt.get();
-                        boolean isAdmin = "ADMIN".equalsIgnoreCase(user.getRole());
-                        if (isAdmin || p.getSellerId().equals(user.getId())) {
-                            req.setAttribute("product", p);
-                            req.setAttribute("pageTitle", "Edit Product Listing - AbisheikMart 2.0");
-                            req.getRequestDispatcher("/WEB-INF/views/seller/product-form.jsp").forward(req, resp);
-                            return;
-                        }
-                    }
-                } catch (NumberFormatException ignored) {}
+        }
+        if ("/seller/product/edit".equals(path)) {
+            try {
+                long productId = Long.parseLong(req.getParameter("id"));
+                Product product = sellerService.getProducts(user.getId(), user.getRole()).stream()
+                        .filter(candidate -> productId == candidate.getId()).findFirst()
+                        .orElseThrow(() -> new SecurityException("Product not found or not owned by you."));
+                req.setAttribute("product", product);
+                req.setAttribute("categories", categoryService.getAllCategories());
+                req.setAttribute("pageTitle", "Edit Product Listing - AbisheikMart 2.0");
+                req.getRequestDispatcher("/WEB-INF/views/seller/product-form.jsp").forward(req, resp);
+            } catch (RuntimeException exception) {
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, exception.getMessage());
             }
-            resp.sendRedirect(req.getContextPath() + "/seller/dashboard?error=product_not_found");
+            return;
+        }
+        if ("/seller/orders".equals(path)) {
+            req.setAttribute("orders", sellerService.getOrders(user.getId(), user.getRole()));
+            req.setAttribute("pageTitle", "Seller Orders - AbisheikMart 2.0");
+            req.getRequestDispatcher("/WEB-INF/views/seller/orders.jsp").forward(req, resp);
             return;
         }
 
-        // Dashboard view (/seller/dashboard)
-        boolean isAdmin = "ADMIN".equalsIgnoreCase(user.getRole());
-        List<Product> products = isAdmin ? productService.getAllProducts() : productService.getProductsBySellerId(user.getId());
-
-        int totalListings = products.size();
-        int totalInventory = products.stream().mapToInt(Product::getStock).sum();
-        long lowStockCount = products.stream().filter(p -> p.getStock() > 0 && p.getStock() <= 5).count();
-
+        List<Product> products = sellerService.getProducts(user.getId(), user.getRole());
+        SellerDashboardStats stats = sellerService.getDashboard(user.getId(), user.getRole());
         req.setAttribute("products", products);
-        req.setAttribute("totalListings", totalListings);
-        req.setAttribute("totalInventory", totalInventory);
-        req.setAttribute("lowStockCount", lowStockCount);
+        req.setAttribute("stats", stats);
+        req.setAttribute("totalListings", stats.getActiveProducts());
+        req.setAttribute("totalInventory", products.stream().mapToInt(product -> product.getStock() == null ? 0 : product.getStock()).sum());
+        req.setAttribute("lowStockCount", products.stream().filter(product -> product.getStock() != null && product.getStock() > 0 && product.getStock() <= 5).count());
         req.setAttribute("pageTitle", "Seller Dashboard - AbisheikMart 2.0");
-
         req.getRequestDispatcher("/WEB-INF/views/seller/dashboard.jsp").forward(req, resp);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        HttpSession session = req.getSession(false);
-        User user = (session != null) ? (User) session.getAttribute("user") : null;
-
-        if (user == null || (!"SELLER".equalsIgnoreCase(user.getRole()) && !"ADMIN".equalsIgnoreCase(user.getRole()))) {
-            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            resp.sendRedirect(req.getContextPath() + "/catalog");
-            return;
-        }
-
+        User user = requireSeller(req, resp, true);
+        if (user == null) return;
         String path = req.getServletPath();
-        boolean isAdmin = "ADMIN".equalsIgnoreCase(user.getRole());
-
         try {
             if ("/api/seller/product/delete".equals(path)) {
-                ProductRequest delReq = JsonUtil.fromJson(req.getReader(), ProductRequest.class);
-                if (delReq != null && delReq.getId() != null) {
-                    productService.deleteProduct(user.getId(), isAdmin, delReq.getId());
-                    resp.setContentType("application/json");
-                    resp.getWriter().write(JsonUtil.toJson(ApiResponse.ok("Product deleted successfully", null)));
-                } else {
-                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    resp.setContentType("application/json");
-                    resp.getWriter().write(JsonUtil.toJson(ApiResponse.error("Product ID is required.")));
+                ProductRequest deleteRequest = JsonUtil.fromJson(req.getReader(), ProductRequest.class);
+                if (deleteRequest == null || deleteRequest.getId() == null) {
+                    writeJsonError(resp, HttpServletResponse.SC_BAD_REQUEST, "Product ID is required.");
+                    return;
                 }
+                sellerService.deleteProduct(user.getId(), user.getRole(), deleteRequest.getId());
+                resp.setContentType("application/json");
+                resp.getWriter().write(JsonUtil.toJson(ApiResponse.ok("Product deleted successfully", null)));
                 return;
             }
 
             if ("/seller/product/save".equals(path)) {
-                String idStr = req.getParameter("id");
-                ProductRequest pReq = new ProductRequest();
-                if (idStr != null && !idStr.isBlank()) {
-                    pReq.setId(Long.parseLong(idStr));
-                }
-                pReq.setName(req.getParameter("name"));
-                pReq.setDescription(req.getParameter("description"));
-                String origPriceStr = req.getParameter("originalPrice");
-                double price = Double.parseDouble(req.getParameter("price"));
-                double origPrice = (origPriceStr != null && !origPriceStr.isBlank()) ? Double.parseDouble(origPriceStr) : price;
-                pReq.setOriginalPrice(origPrice);
-                pReq.setPrice(price);
-                pReq.setStock(Integer.parseInt(req.getParameter("stock")));
-                pReq.setCategoryId(Long.parseLong(req.getParameter("categoryId")));
-                pReq.setImageUrl(req.getParameter("imageUrl"));
-
-                if (pReq.getId() != null) {
-                    productService.updateProduct(user.getId(), isAdmin, pReq);
-                } else {
-                    productService.createProduct(user.getId(), pReq);
-                }
-
+                ProductRequest productRequest = productRequest(req);
+                if (productRequest.getId() == null) sellerService.createProduct(user.getId(), user.getRole(), productRequest);
+                else sellerService.updateProduct(user.getId(), user.getRole(), productRequest);
                 resp.sendRedirect(req.getContextPath() + "/seller/dashboard?save=success");
+                return;
             }
-        } catch (IllegalArgumentException e) {
-            req.setAttribute("errorMessage", e.getMessage());
-            req.setAttribute("categories", categoryService.getAllCategories());
-            req.getRequestDispatcher("/WEB-INF/views/seller/product-form.jsp").forward(req, resp);
-        } catch (Exception e) {
-            req.setAttribute("errorMessage", "Error saving product listing: " + e.getMessage());
+
+            if ("/seller/order/status".equals(path) || "/api/seller/order/status".equals(path)) {
+                Long orderId = parseLong(req.getParameter("orderId"), "Order ID is required.");
+                String status = req.getParameter("status");
+                sellerService.updateOrderStatus(user.getId(), user.getRole(), orderId, status);
+                if ("/api/seller/order/status".equals(path)) {
+                    resp.setContentType("application/json");
+                    resp.getWriter().write(JsonUtil.toJson(ApiResponse.ok("Order status updated.", null)));
+                } else {
+                    resp.sendRedirect(req.getContextPath() + "/seller/orders?updated=success");
+                }
+            }
+        } catch (SecurityException exception) {
+            writeJsonOrPageError(req, resp, path, HttpServletResponse.SC_FORBIDDEN, exception.getMessage());
+        } catch (IllegalArgumentException | SQLException exception) {
+            writeJsonOrPageError(req, resp, path, HttpServletResponse.SC_BAD_REQUEST, exception.getMessage());
+        }
+    }
+
+    private ProductRequest productRequest(HttpServletRequest req) {
+        ProductRequest product = new ProductRequest();
+        String id = req.getParameter("id");
+        if (id != null && !id.isBlank()) product.setId(Long.parseLong(id));
+        product.setName(req.getParameter("name"));
+        product.setDescription(req.getParameter("description"));
+        product.setOriginalPrice(parseDouble(req.getParameter("originalPrice"), null));
+        product.setPrice(parseDouble(req.getParameter("price"), null));
+        product.setStock(parseInteger(req.getParameter("stock"), null));
+        product.setCategoryId(parseLong(req.getParameter("categoryId"), null));
+        product.setImageUrl(req.getParameter("imageUrl"));
+        return product;
+    }
+
+    private User requireSeller(HttpServletRequest req, HttpServletResponse resp, boolean api) throws IOException {
+        HttpSession session = req.getSession(false);
+        User user = session == null ? null : (User) session.getAttribute("user");
+        if (user == null || !"SELLER".equalsIgnoreCase(user.getRole())) {
+            if (api) writeJsonError(resp, HttpServletResponse.SC_FORBIDDEN, "SELLER access is required.");
+            else resp.sendError(HttpServletResponse.SC_FORBIDDEN, "SELLER access is required.");
+            return null;
+        }
+        return user;
+    }
+
+    private void writeJsonOrPageError(HttpServletRequest req, HttpServletResponse resp, String path, int status, String message) throws ServletException, IOException {
+        if (path != null && path.startsWith("/api/")) writeJsonError(resp, status, message);
+        else if ("/seller/orders".equals(path)) {
+            resp.setStatus(status);
+            req.setAttribute("errorMessage", message);
+            req.setAttribute("orders", sellerService.getOrders(((User) req.getSession(false).getAttribute("user")).getId(), "SELLER"));
+            req.getRequestDispatcher("/WEB-INF/views/seller/orders.jsp").forward(req, resp);
+        } else {
+            req.setAttribute("errorMessage", message);
             req.setAttribute("categories", categoryService.getAllCategories());
             req.getRequestDispatcher("/WEB-INF/views/seller/product-form.jsp").forward(req, resp);
         }
     }
+
+    private void writeJsonError(HttpServletResponse resp, int status, String message) throws IOException {
+        resp.setStatus(status);
+        resp.setContentType("application/json");
+        resp.getWriter().write(JsonUtil.toJson(ApiResponse.error(message == null ? "Seller operation failed." : message)));
+    }
+
+    private Long parseLong(String value, String missingMessage) {
+        if (value == null || value.isBlank()) {
+            if (missingMessage == null) return null;
+            throw new IllegalArgumentException(missingMessage);
+        }
+        return Long.parseLong(value);
+    }
+
+    private Integer parseInteger(String value, Integer fallback) { return value == null || value.isBlank() ? fallback : Integer.valueOf(value); }
+    private Double parseDouble(String value, Double fallback) { return value == null || value.isBlank() ? fallback : Double.valueOf(value); }
 }
