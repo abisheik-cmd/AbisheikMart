@@ -101,11 +101,13 @@ CREATE TABLE IF NOT EXISTS reviews (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     product_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
-    user_name VARCHAR(100) NOT NULL,
+    user_name VARCHAR(100),
     rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
     comment TEXT NOT NULL,
     image_url VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uk_reviews_user_product UNIQUE (user_id, product_id),
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -139,6 +141,8 @@ ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50) DEFAULT '
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_code VARCHAR(50);
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_amount DECIMAL(10, 2) DEFAULT 0.00;
 ALTER TABLE order_items ADD COLUMN IF NOT EXISTS seller_id BIGINT;
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE reviews ALTER COLUMN user_name SET NULL;
 
 -- INDEXES
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);

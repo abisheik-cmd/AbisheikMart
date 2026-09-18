@@ -1,40 +1,35 @@
-/**
- * AbisheikMart 2.0 - Product Review Submission Script
- */
+/** Secure Product Review actions for AbisheikMart. */
+function reviewBasePath() {
+    return window.location.origin + (window.location.pathname.startsWith('/abisheikmart') ? '/abisheikmart' : '');
+}
+
+function reviewPayload(productId) {
+    return {
+        productId: Number(productId),
+        rating: Number(document.getElementById('review-rating').value),
+        comment: document.getElementById('review-comment').value.trim(),
+        imageUrl: (document.getElementById('review-image')?.value || '').trim()
+    };
+}
 
 function submitReviewAjax(event, productId) {
     event.preventDefault();
-    const rating = document.getElementById('review-rating').value;
     const comment = document.getElementById('review-comment').value.trim();
-    const imageUrl = document.getElementById('review-image').value.trim();
+    if (!comment) { alert('Please write a review comment.'); return; }
+    const reviewId = document.getElementById('review-id')?.value;
+    const payload = reviewPayload(productId);
+    if (reviewId) payload.reviewId = Number(reviewId);
+    const endpoint = reviewId ? '/api/review/update' : '/api/review/add';
+    fetch(reviewBasePath() + endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        .then(res => res.json().then(data => ({ ok: res.ok, data })))
+        .then(result => { if (result.ok && result.data.status >= 200 && result.data.status < 300) { alert(result.data.message || 'Review saved.'); window.location.reload(); } else alert(result.data.message || 'Review request failed.'); })
+        .catch(() => alert('Failed to save review.'));
+}
 
-    if (!comment) {
-        alert('Please write a review comment.');
-        return;
-    }
-
-    const payload = {
-        productId: productId,
-        rating: parseInt(rating),
-        comment: comment,
-        imageUrl: imageUrl
-    };
-
-    fetch(window.location.origin + (window.location.pathname.startsWith('/abisheikmart') ? '/abisheikmart' : '') + '/api/review/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === 200 || data.status === 201) {
-            alert('Review submitted successfully!');
-            window.location.reload();
-        } else {
-            alert('Error submitting review: ' + data.message);
-        }
-    })
-    .catch(err => {
-        alert('Failed to submit review.');
-    });
+function deleteReviewAjax(reviewId) {
+    if (!confirm('Delete your review?')) return;
+    fetch(reviewBasePath() + '/api/review/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reviewId: Number(reviewId) }) })
+        .then(res => res.json().then(data => ({ ok: res.ok, data })))
+        .then(result => { if (result.ok) { alert(result.data.message || 'Review deleted.'); window.location.reload(); } else alert(result.data.message || 'Unable to delete review.'); })
+        .catch(() => alert('Failed to delete review.'));
 }

@@ -248,6 +248,14 @@ public class OrderDao {
         return list;
     }
 
+    public boolean hasPurchasedProduct(Long userId, Long productId) {
+        String sql = "SELECT COUNT(*) FROM orders o JOIN order_items oi ON oi.order_id = o.id WHERE o.user_id = ? AND oi.product_id = ? AND o.status <> 'CANCELLED'";
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId); ps.setLong(2, productId);
+            try (ResultSet rs = ps.executeQuery()) { return rs.next() && rs.getLong(1) > 0; }
+        } catch (SQLException e) { logger.error("Error validating purchase for review", e); return false; }
+    }
+
     public List<SellerOrderSummary> findSellerOrderSummaries(Long sellerId) {
         String sql = "SELECT o.id AS order_id, o.created_at, o.status, o.delivery_address, o.phone_number, "
                 + "u.name AS buyer_name, u.email AS buyer_email, oi.product_id, oi.product_name, oi.quantity, "

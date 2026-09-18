@@ -77,34 +77,33 @@
             <section style="margin-top: 2.5rem; background: var(--glass-bg); padding: 2rem; border-radius: 16px; border: 1px solid var(--glass-border);">
                 <h2 style="color: #fff; font-size: 1.4rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;">
                     <span>⭐ Customer Reviews & Ratings</span>
-                    <span style="font-size: 0.9rem; color: var(--accent-cyan);">Verified Purchases</span>
+                    <span style="font-size: 0.9rem; color: var(--accent-cyan);">Buyer Feedback</span>
                 </h2>
 
-                <!-- Add Review Form -->
-                <c:if test="${sessionScope.user != null}">
+                <!-- Buyer Review Form -->
+                <c:if test="${sessionScope.user != null && sessionScope.user.role == 'CUSTOMER' && (canReview || myReview != null)}">
                     <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; border: 1px solid rgba(255,255,255,0.08);">
-                        <h4 style="color: #fff; margin-bottom: 1rem;">Write a Customer Review</h4>
+                        <h4 style="color: #fff; margin-bottom: 1rem;">${myReview != null ? 'Edit Your Review' : 'Write a Customer Review'}</h4>
                         <form id="review-form" onsubmit="submitReviewAjax(event, ${product.id})">
+                            <c:if test="${myReview != null}"><input type="hidden" id="review-id" value="${myReview.id}"></c:if>
                             <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
                                 <label style="color: var(--text-secondary);">Rating:</label>
                                 <select id="review-rating" class="form-control" style="width: 120px;">
-                                    <option value="5">★★★★★ (5)</option>
-                                    <option value="4">★★★★☆ (4)</option>
-                                    <option value="3">★★★☆☆ (3)</option>
-                                    <option value="2">★★☆☆☆ (2)</option>
-                                    <option value="1">★☆☆☆☆ (1)</option>
+                                    <option value="5" ${myReview.rating == 5 ? 'selected' : ''}>★★★★★ (5)</option><option value="4" ${myReview.rating == 4 ? 'selected' : ''}>★★★★☆ (4)</option><option value="3" ${myReview.rating == 3 ? 'selected' : ''}>★★★☆☆ (3)</option><option value="2" ${myReview.rating == 2 ? 'selected' : ''}>★★☆☆☆ (2)</option><option value="1" ${myReview.rating == 1 ? 'selected' : ''}>★☆☆☆☆ (1)</option>
                                 </select>
                             </div>
                             <div style="margin-bottom: 1rem;">
-                                <textarea id="review-comment" class="form-control" rows="3" placeholder="Share your experience with this product..." required></textarea>
+                                <textarea id="review-comment" class="form-control" rows="3" placeholder="Share your experience with this product..." required>${myReview.comment}</textarea>
                             </div>
                             <div style="margin-bottom: 1rem;">
-                                <input type="url" id="review-image" class="form-control" placeholder="Review Picture URL (Optional, e.g., images/keyboard.jpg)">
+                                <input type="url" id="review-image" class="form-control" value="${myReview.imageUrl}" placeholder="Review Picture URL (Optional, e.g., images/keyboard.jpg)">
                             </div>
-                            <button type="submit" class="btn btn-primary btn-sm">Submit Review</button>
+                            <button type="submit" class="btn btn-primary btn-sm">${myReview != null ? 'Update Review' : 'Submit Review'}</button>
+                            <c:if test="${myReview != null}"><button type="button" class="btn btn-danger btn-sm" onclick="deleteReviewAjax(${myReview.id})">Delete Review</button></c:if>
                         </form>
                     </div>
                 </c:if>
+                <c:if test="${sessionScope.user != null && sessionScope.user.role == 'CUSTOMER' && !canReview && myReview == null}"><p style="color:var(--text-secondary); margin-bottom:1.5rem;">Only buyers who have purchased this product can submit a review.</p></c:if>
 
                 <!-- Reviews List -->
                 <div id="reviews-list">

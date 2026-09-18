@@ -4,6 +4,7 @@ import com.abisheikmart.dto.ApiResponse;
 import com.abisheikmart.model.Category;
 import com.abisheikmart.model.Product;
 import com.abisheikmart.model.Review;
+import com.abisheikmart.model.User;
 import com.abisheikmart.service.CategoryService;
 import com.abisheikmart.service.ProductService;
 import com.abisheikmart.service.ReviewService;
@@ -14,6 +15,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -42,11 +44,15 @@ public class CatalogServlet extends HttpServlet {
                 try {
                     Long id = Long.parseLong(idStr);
                     Optional<Product> pOpt = productService.getProductById(id);
-                    if (pOpt.isPresent()) {
+                    if (pOpt.isPresent() && pOpt.get().getActive()) {
                         Product p = pOpt.get();
                         List<Review> reviews = reviewService.getProductReviews(id);
+                        HttpSession session = req.getSession(false);
+                        User sessionUser = session == null ? null : (User) session.getAttribute("user");
                         req.setAttribute("product", p);
                         req.setAttribute("reviews", reviews);
+                        req.setAttribute("myReview", sessionUser == null ? null : reviewService.getUserProductReview(sessionUser.getId(), id).orElse(null));
+                        req.setAttribute("canReview", sessionUser != null && reviewService.canReview(sessionUser.getId(), sessionUser.getRole(), id));
                         req.setAttribute("pageTitle", p.getName() + " - AbisheikMart 2.0");
                         req.getRequestDispatcher("/WEB-INF/views/catalog/product-detail.jsp").forward(req, resp);
                         return;
