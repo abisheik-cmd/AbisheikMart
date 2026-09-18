@@ -30,6 +30,20 @@ public class RoleAuthorizationFilter implements Filter {
         boolean isSellerPath = uri.contains("/seller");
         boolean isAdminPath = uri.contains("/admin");
 
+        if (user == null) {
+            boolean isAjax = (httpRequest.getHeader("X-Requested-With") != null && "XMLHttpRequest".equals(httpRequest.getHeader("X-Requested-With")))
+                    || (httpRequest.getHeader("Accept") != null && httpRequest.getHeader("Accept").contains("application/json"))
+                    || uri.startsWith(httpRequest.getContextPath() + "/api/");
+            if (isAjax) {
+                httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                httpResponse.setContentType("application/json");
+                httpResponse.getWriter().write(JsonUtil.toJson(ApiResponse.error("Authentication required. Please log in.")));
+            } else {
+                httpResponse.sendRedirect(httpRequest.getContextPath() + "/login?redirect=" + uri);
+            }
+            return;
+        }
+
         if (user != null) {
             String role = user.getRole();
             boolean isAllowed = false;

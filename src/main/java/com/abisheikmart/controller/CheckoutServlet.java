@@ -95,14 +95,17 @@ public class CheckoutServlet extends HttpServlet {
         // Verify OTP if phone number provided and not verified in session
         if (phoneNumber != null && !phoneNumber.isBlank() && otpInput != null && !otpInput.isBlank()) {
             boolean valid = otpService.verifyOtp(phoneNumber, otpInput);
-            if (!valid) {
-                if (isApi) {
-                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    resp.setContentType("application/json");
-                    resp.getWriter().write(JsonUtil.toJson(ApiResponse.error("Invalid or expired Mobile OTP verification code.")));
+                if (!valid) {
+                    if (isApi) {
+                        resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        resp.setContentType("application/json");
+                        resp.getWriter().write(JsonUtil.toJson(ApiResponse.error("Invalid or expired Mobile OTP verification code.")));
+                    } else {
+                        req.setAttribute("errorMessage", "Invalid or expired Mobile OTP verification code.");
+                        doGet(req, resp);
+                    }
                     return;
                 }
-            }
         }
 
         try {
