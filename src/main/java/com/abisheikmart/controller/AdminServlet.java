@@ -1,6 +1,7 @@
 package com.abisheikmart.controller;
 
 import com.abisheikmart.model.User;
+import com.abisheikmart.service.CategoryService;
 import com.abisheikmart.service.AdminService;
 
 import javax.servlet.ServletException;
@@ -14,6 +15,7 @@ import java.io.IOException;
 @WebServlet(urlPatterns = {"/admin", "/admin/", "/admin/users", "/admin/users/view", "/admin/users/status", "/admin/products", "/admin/products/view", "/admin/products/status", "/admin/orders", "/admin/orders/view", "/admin/orders/status"})
 public class AdminServlet extends HttpServlet {
     private final AdminService adminService = new AdminService();
+    private final CategoryService categoryService = new CategoryService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -34,6 +36,7 @@ public class AdminServlet extends HttpServlet {
                 req.setAttribute("product", adminService.getProduct(admin.getId(), admin.getRole(), requiredLong(req.getParameter("id"), "Product ID is required.")));
                 req.getRequestDispatcher("/WEB-INF/views/admin/product-details.jsp").forward(req, resp);
             } else if ("/admin/products".equals(path)) {
+                req.setAttribute("categories", categoryService.getAllCategories());
                 req.setAttribute("products", adminService.listProducts(admin.getId(), admin.getRole(), req.getParameter("q"), optionalLong(req.getParameter("categoryId")), optionalLong(req.getParameter("sellerId")), activeFilter(req.getParameter("active"))));
                 req.getRequestDispatcher("/WEB-INF/views/admin/products.jsp").forward(req, resp);
             } else if ("/admin/orders/view".equals(path)) {
