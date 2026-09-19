@@ -3,15 +3,12 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
          version="4.0">
-
     <display-name>AbisheikMart 2.0</display-name>
 
-    <!-- Application Lifecycle Listener -->
     <listener>
         <listener-class>com.abisheikmart.listener.AppContextListener</listener-class>
     </listener>
 
-    <!-- Character Encoding Filter -->
     <filter>
         <filter-name>EncodingFilter</filter-name>
         <filter-class>com.abisheikmart.filter.EncodingFilter</filter-class>
@@ -21,35 +18,57 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
-    <!-- Authentication Filter -->
     <filter>
         <filter-name>AuthenticationFilter</filter-name>
         <filter-class>com.abisheikmart.filter.AuthenticationFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>AuthenticationFilter</filter-name>
+        <url-pattern>/cart</url-pattern>
         <url-pattern>/cart/*</url-pattern>
+        <url-pattern>/checkout</url-pattern>
         <url-pattern>/checkout/*</url-pattern>
+        <url-pattern>/orders</url-pattern>
         <url-pattern>/orders/*</url-pattern>
         <url-pattern>/seller/*</url-pattern>
         <url-pattern>/admin</url-pattern>
         <url-pattern>/admin/*</url-pattern>
+        <url-pattern>/api/cart</url-pattern>
+        <url-pattern>/api/cart/*</url-pattern>
+        <url-pattern>/api/checkout</url-pattern>
+        <url-pattern>/api/checkout/*</url-pattern>
+        <url-pattern>/api/orders</url-pattern>
+        <url-pattern>/api/orders/*</url-pattern>
+        <url-pattern>/api/seller/*</url-pattern>
+        <url-pattern>/api/admin/*</url-pattern>
+        <url-pattern>/reviews/*</url-pattern>
+        <url-pattern>/api/review/*</url-pattern>
+        <url-pattern>/api/notifications/*</url-pattern>
     </filter-mapping>
 
-    <!-- Welcome File Configuration -->
+    <filter>
+        <filter-name>RoleAuthorizationFilter</filter-name>
+        <filter-class>com.abisheikmart.filter.RoleAuthorizationFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>RoleAuthorizationFilter</filter-name>
+        <url-pattern>/seller/*</url-pattern>
+        <url-pattern>/admin</url-pattern>
+        <url-pattern>/admin/*</url-pattern>
+        <url-pattern>/api/seller/*</url-pattern>
+        <url-pattern>/api/admin/*</url-pattern>
+    </filter-mapping>
+
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
 
-    <!-- Error Page Handlers -->
     <error-page>
         <error-code>404</error-code>
         <location>/WEB-INF/views/error/404.jsp</location>
     </error-page>
-
     <error-page>
         <error-code>500</error-code>
         <location>/WEB-INF/views/error/500.jsp</location>
     </error-page>
-
 </web-app>

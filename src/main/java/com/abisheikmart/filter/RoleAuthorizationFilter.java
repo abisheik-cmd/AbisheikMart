@@ -5,13 +5,11 @@ import com.abisheikmart.model.User;
 import com.abisheikmart.util.JsonUtil;
 
 import javax.servlet.*;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebFilter(urlPatterns = {"/seller/*", "/admin", "/admin/*", "/api/seller/*", "/api/admin/*"})
 public class RoleAuthorizationFilter implements Filter {
 
     @Override
