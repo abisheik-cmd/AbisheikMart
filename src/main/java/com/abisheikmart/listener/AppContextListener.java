@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import javax.servlet.annotation.WebListener;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,7 +14,6 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Properties;
 
-@WebListener
 public class AppContextListener implements ServletContextListener {
 
     private static final Logger logger = LoggerFactory.getLogger(AppContextListener.class);
@@ -33,12 +31,24 @@ public class AppContextListener implements ServletContextListener {
                 }
             }
 
+            overrideFromEnvironment(props, "DB_URL", "db.url");
+            overrideFromEnvironment(props, "DB_DRIVER", "db.driver");
+            overrideFromEnvironment(props, "DB_USERNAME", "db.username");
+            overrideFromEnvironment(props, "DB_PASSWORD", "db.password");
+
             DBUtil.initDataSource(props);
             initDatabaseSchemaAndSeed();
             logger.info("AbisheikMart 2.0 Application Context initialized successfully.");
         } catch (Exception e) {
             logger.error("Error during application context initialization", e);
             throw new RuntimeException("Application startup failed", e);
+        }
+    }
+
+    private void overrideFromEnvironment(Properties props, String environmentKey, String propertyKey) {
+        String value = System.getenv(environmentKey);
+        if (value != null && !value.isBlank()) {
+            props.setProperty(propertyKey, value);
         }
     }
 
