@@ -57,7 +57,7 @@ The application is built using a traditional **Java Servlet + JSP + Maven + WAR 
 
 ### Backend
 
-- **Java 25**
+- **Java 17 LTS**
 - **Java Servlets**
 - **JSP**
 - **Maven**

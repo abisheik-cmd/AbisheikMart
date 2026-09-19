@@ -1,0 +1,9 @@
+target/
+.git/
+.gitignore
+*.mv.db
+*.trace.db
+*.lock.db
+logs/
+data/
+node_modules/
