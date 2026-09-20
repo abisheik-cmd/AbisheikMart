@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-@WebServlet(urlPatterns = {"/", "/catalog", "/catalog/detail", "/api/products", "/abisheikmart", "/abisheikmart/*"})
+@WebServlet(urlPatterns = {"/catalog", "/catalog/detail", "/api/products", "/abisheikmart", "/abisheikmart/*"})
 public class CatalogServlet extends HttpServlet {
 
     private final ProductService productService = new ProductService();
