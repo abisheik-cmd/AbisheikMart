@@ -2,7 +2,7 @@
    Abisheikmart - Premium Dark Glassmorphism Design System
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sora:wght@400;500;600;700;800&display=swap');
 
 :root {
     /* Color Palette */
@@ -1195,4 +1195,116 @@ textarea, select {
 textarea:focus, select:focus {
     border-color: var(--accent-cyan) !important;
     box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+}
+
+/* ========================================================================
+   Capstone review theme — light premium e-commerce treatment
+   Behaviour and component structure remain unchanged. This layer overrides
+   the original glassmorphism palette while preserving existing selectors.
+   ======================================================================== */
+:root {
+    --bg-dark: #F5F5F2;
+    --bg-mesh: none;
+    --glass-bg: #FFFFFF;
+    --glass-bg-hover: #F8FAFC;
+    --glass-border: #E2E2DE;
+    --glass-border-glow: rgba(37, 99, 235, 0.24);
+    --glass-shadow: 0 12px 30px rgba(17, 24, 39, 0.08);
+    --accent-blue: #2563EB;
+    --accent-cyan: #2563EB;
+    --accent-purple: #1D4ED8;
+    --accent-green: #16A34A;
+    --accent-amber: #D97706;
+    --accent-rose: #DC2626;
+    --text-primary: #111111;
+    --text-secondary: #5F6368;
+    --text-muted: #6B7280;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+}
+
+html, body { background: #F5F5F2; color: #111111; }
+body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+h1, h2, h3, h4, h5, h6, .brand { font-family: 'Sora', 'Inter', system-ui, sans-serif; }
+
+.navbar {
+    background: rgba(255, 255, 255, 0.96);
+    border-bottom: 1px solid #E2E2DE;
+    box-shadow: 0 2px 12px rgba(17, 24, 39, 0.06);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+.brand { background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%); background-clip: text; }
+.brand-icon { filter: none; }
+.nav-search input, .sort-select, .form-control, textarea, select {
+    background: #FFFFFF;
+    color: #111111;
+    border-color: #E2E2DE;
+    box-shadow: none;
+}
+.nav-search input:focus, .sort-select:focus, .form-control:focus, textarea:focus, select:focus {
+    border-color: #2563EB !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+}
+.nav-item { color: #5F6368; }
+.nav-item:hover, .nav-item.active { color: #2563EB; background: #EFF6FF; }
+.cart-btn-trigger { background: #EFF6FF; border-color: #BFDBFE; }
+
+.btn-primary { background: #2563EB; color: #FFFFFF; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22); }
+.btn-primary:hover { background: #1D4ED8; box-shadow: 0 6px 16px rgba(37, 99, 235, 0.28); }
+.btn-secondary { background: #FFFFFF; color: #111111; border-color: #E2E2DE; }
+.btn-secondary:hover { background: #F5F5F2; border-color: #CBD5E1; }
+.btn-success { background: #16A34A; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2); }
+.btn-danger { background: #DC2626; }
+
+.main-content { color: #111111; }
+.auth-portal-card, .product-card, .data-table, .modal-card,
+.product-detail-grid, .cart-drawer, .event-banner {
+    background: #FFFFFF;
+    border-color: #E2E2DE;
+    box-shadow: 0 12px 30px rgba(17, 24, 39, 0.08);
+}
+.product-card:hover { box-shadow: 0 18px 34px rgba(17, 24, 39, 0.12), 0 0 0 1px rgba(37, 99, 235, 0.12); }
+.card-image-wrap, .product-detail-image-wrap { background: #F8FAFC; }
+.card-title, .discovery-title, .auth-header h1, .product-card h3 { color: #111111; }
+.card-desc, .card-seller, .auth-header p, .form-group label, .mrp-price { color: #5F6368; }
+.card-price { color: #2563EB; }
+.category-chip { background: #FFFFFF; color: #5F6368; border-color: #E2E2DE; }
+.category-chip:hover, .category-chip.active { background: #EFF6FF; color: #1D4ED8; border-color: #93C5FD; }
+
+.data-table { color: #111111; }
+.data-table th { background: #F8FAFC; color: #374151; border-bottom-color: #E2E2DE; }
+.data-table th, .data-table td { border-color: #E2E2DE; }
+.data-table tr:hover { background: #F8FAFC; }
+.cart-drawer-overlay, .modal-overlay { background: rgba(17, 24, 39, 0.32); }
+.cart-drawer { box-shadow: -12px 0 36px rgba(17, 24, 39, 0.14); }
+.cart-drawer-header, .cart-drawer-footer { border-color: #E2E2DE; }
+.cart-item-card, .notification-dropdown-menu, .lucky-modal { background: #FFFFFF; border-color: #E2E2DE; }
+.notification-dropdown-menu { box-shadow: 0 16px 34px rgba(17, 24, 39, 0.12); }
+.notif-item:hover { background: #F8FAFC; }
+.toast { box-shadow: 0 10px 24px rgba(17, 24, 39, 0.14); }
+
+.in-stock { background: #F0FDF4; color: #15803D; border-color: #BBF7D0; }
+.low-stock, .event-tag, .star-rating-pill { background: #FFF7ED; color: #B45309; border-color: #FED7AA; }
+.out-of-stock { background: #FEF2F2; color: #B91C1C; border-color: #FECACA; }
+.role-buyer { background: #EFF6FF; color: #1D4ED8; border-color: #BFDBFE; }
+.role-seller { background: #EEF2FF; color: #4338CA; border-color: #C7D2FE; }
+.role-admin { background: #FFF7ED; color: #B45309; border-color: #FED7AA; }
+
+footer { color: #6B7280 !important; border-top-color: #E2E2DE !important; }
+footer > div { color: #6B7280 !important; }
+.main-content [style*="color: #fff"], .main-content [style*="color:#fff"],
+.auth-portal-card [style*="color: #fff"], .auth-portal-card [style*="color:#fff"] {
+    color: #111111 !important;
+}
+.main-content [style*="background: rgba(255,255,255,0.03)"],
+.main-content [style*="background:rgba(255,255,255,0.03)"] {
+    background: #F8FAFC !important;
+    border-color: #E2E2DE !important;
+}
+
+@media (max-width: 700px) {
+    .navbar { padding: 0.75rem 1rem; }
+    .main-content { padding-left: 1rem; padding-right: 1rem; }
 }
