@@ -1311,6 +1311,10 @@ footer > div { color: #6B7280 !important; }
 .product-detail-image-wrap {
     position: relative;
 }
+.product-detail-image-wrap .card-badge-discount {
+    right: auto;
+    bottom: auto;
+}
 .hero-title {
     background: none;
     color: #111111;
