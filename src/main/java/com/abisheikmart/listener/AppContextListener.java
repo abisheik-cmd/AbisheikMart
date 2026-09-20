@@ -199,6 +199,82 @@ public class AppContextListener implements ServletContextListener {
                 }
             }
 
+            // Add the expanded catalog after seller and category bootstrap. The name check
+            // keeps this migration safe to rerun on existing and freshly initialized databases.
+            if (sellerId > 0) {
+                record AdditionalSeedItem(String name, String desc, double origPrice, double price, int stock, String categoryName, String img) {}
+                AdditionalSeedItem[] additionalItems = new AdditionalSeedItem[] {
+                    new AdditionalSeedItem("USB-C GaN Fast Charger 65W", "Compact dual-port GaN wall charger for phones, tablets, and laptops with fast USB-C power delivery.", 2999.00, 1899.00, 24, "Electronics", "images/usb-c-hub.jpg"),
+                    new AdditionalSeedItem("Portable SSD 1TB", "Slim external solid-state drive with fast USB-C transfer speeds for backups and creative work.", 8999.00, 6499.00, 12, "Electronics", "images/keyboard.jpg"),
+                    new AdditionalSeedItem("Full HD Streaming Webcam", "1080p webcam with autofocus, privacy shutter, and built-in microphone for classes and calls.", 3999.00, 2499.00, 18, "Electronics", "images/camera.jpg"),
+                    new AdditionalSeedItem("Ergonomic Wireless Keyboard and Mouse", "Low-profile wireless keyboard and mouse combo with comfortable typing and quiet clicks.", 2999.00, 1999.00, 20, "Electronics", "images/wireless-mouse.jpg"),
+                    new AdditionalSeedItem("Noise-Isolating Neckband", "Lightweight Bluetooth neckband with magnetic earbuds and a long-lasting battery for daily commuting.", 1999.00, 1199.00, 28, "Electronics", "images/wireless-earbuds.jpg"),
+
+                    new AdditionalSeedItem("The Pragmatic Programmer", "Practical software craftsmanship lessons for building adaptable and dependable applications.", 999.00, 699.00, 22, "Books", "images/clean-code.jpg"),
+                    new AdditionalSeedItem("Computer Networking Fundamentals", "Clear introduction to protocols, networks, internet architecture, and troubleshooting concepts.", 1299.00, 899.00, 18, "Books", "images/python-data.jpg"),
+                    new AdditionalSeedItem("Atomic Productivity Planner", "Guided planner with weekly layouts, habit tracking, and focused daily planning pages.", 799.00, 499.00, 30, "Books", "images/deep-work.jpg"),
+                    new AdditionalSeedItem("The Indian Startup Handbook", "A practical overview of validating ideas, serving customers, and growing an Indian business.", 899.00, 599.00, 20, "Books", "images/startup-playbook.jpg"),
+
+                    new AdditionalSeedItem("Slim Silicone Phone Case", "Flexible shock-absorbing phone case with raised camera protection and a soft-touch finish.", 999.00, 499.00, 40, "Accessories", "images/phone-stand.jpg"),
+                    new AdditionalSeedItem("Tempered Glass Screen Protector", "Clear tempered glass screen protector with alignment frame and smudge-resistant coating.", 699.00, 299.00, 38, "Accessories", "images/galaxy-a55.jpg"),
+                    new AdditionalSeedItem("Magnetic Cable Organizer Set", "Reusable magnetic cable clips that keep charging leads tidy on desks and bedside tables.", 499.00, 249.00, 34, "Accessories", "images/braided-cable.jpg"),
+                    new AdditionalSeedItem("Foldable Travel Packing Cubes", "Lightweight set of packing cubes with breathable mesh panels for organized travel luggage.", 1999.00, 1199.00, 16, "Accessories", "images/canvas-backpack.jpg"),
+
+                    new AdditionalSeedItem("Regular Fit Linen Blend Shirt", "Breathable linen-blend casual shirt with a relaxed silhouette for warm Indian weather.", 2499.00, 1599.00, 20, "Fashion", "images/jacket.jpg"),
+                    new AdditionalSeedItem("Everyday Cotton Chinos", "Comfort-stretch cotton chinos with a clean tapered fit for office and weekend wear.", 2999.00, 1899.00, 18, "Fashion", "images/sneakers.jpg"),
+                    new AdditionalSeedItem("Lightweight Puffer Jacket", "Lightly insulated quilted jacket with zip pockets for cool mornings and travel.", 5999.00, 3999.00, 13, "Fashion", "images/jacket.jpg"),
+                    new AdditionalSeedItem("Breathable Casual Slip-On Shoes", "Cushioned knit slip-on shoes with flexible soles for comfortable everyday walking.", 2999.00, 1999.00, 22, "Fashion", "images/sneakers.jpg"),
+
+                    new AdditionalSeedItem("Hexagonal Rubber Dumbbells 5kg", "Pair of compact rubber-coated dumbbells with comfortable handles for home strength training.", 2499.00, 1699.00, 15, "Fitness", "images/dumbbell.jpg"),
+                    new AdditionalSeedItem("High-Density Foam Roller", "Firm textured foam roller for warm-ups, mobility work, and post-workout recovery.", 1799.00, 1099.00, 18, "Fitness", "images/yoga-mat.jpg"),
+                    new AdditionalSeedItem("Adjustable Kettlebell 12kg", "Space-saving adjustable kettlebell with secure weight plates for versatile home workouts.", 3499.00, 2499.00, 12, "Fitness", "images/dumbbell.jpg"),
+                    new AdditionalSeedItem("Breathable Training Gloves", "Padded gym gloves with breathable mesh and adjustable wrist closure for lifting sessions.", 999.00, 599.00, 25, "Fitness", "images/resistance-bands.jpg"),
+
+                    new AdditionalSeedItem("Minimal LED Study Lamp", "Adjustable LED study lamp with touch controls and warm, neutral, and cool light modes.", 2499.00, 1399.00, 21, "Home", "images/extension-board.jpg"),
+                    new AdditionalSeedItem("Borosilicate Glass Food Container Set", "Leak-resistant glass storage containers with secure lids for meal prep and kitchen storage.", 1999.00, 1299.00, 20, "Home", "images/storage-organizer.jpg"),
+                    new AdditionalSeedItem("Cotton Cushion Cover Set", "Set of textured cotton cushion covers with concealed zips for a simple living-room refresh.", 1299.00, 799.00, 27, "Home", "images/cotton-bedsheet.jpg"),
+                    new AdditionalSeedItem("Stainless Steel Cookware Organizer", "Countertop organizer with sections for pans, lids, and everyday cooking utensils.", 1799.00, 1099.00, 19, "Home", "images/kitchen-organizer.jpg"),
+
+                    new AdditionalSeedItem("Samsung Galaxy M35 5G", "Mid-range 5G smartphone with a vivid display, capable cameras, and a large everyday battery.", 24999.00, 19999.00, 9, "Mobiles", "images/galaxy-a55.jpg"),
+                    new AdditionalSeedItem("OnePlus 12R", "Performance-focused smartphone with a smooth high-refresh display and fast wired charging.", 45999.00, 38999.00, 6, "Mobiles", "images/oneplus-nord.jpg"),
+                    new AdditionalSeedItem("Google Pixel 8", "Compact smartphone with clean Android software and computational photography features.", 75999.00, 64999.00, 5, "Mobiles", "images/pixel-8a.jpg"),
+                    new AdditionalSeedItem("Redmi Note 13 5G", "Value-focused 5G smartphone with a bright display, reliable cameras, and all-day battery life.", 22999.00, 17999.00, 12, "Mobiles", "images/redmi-note-13-pro.jpg"),
+                    new AdditionalSeedItem("Vivo Y200 5G", "Slim 5G smartphone with a colorful display, portrait camera, and fast charging support.", 26999.00, 21999.00, 10, "Mobiles", "images/vivo-v30.jpg")
+                };
+
+                for (AdditionalSeedItem item : additionalItems) {
+                    long categoryId = 0;
+                    try (PreparedStatement psCategory = conn.prepareStatement("SELECT id FROM categories WHERE name = ?;")) {
+                        psCategory.setString(1, item.categoryName());
+                        ResultSet categoryResult = psCategory.executeQuery();
+                        if (categoryResult.next()) categoryId = categoryResult.getLong("id");
+                    }
+                    if (categoryId == 0) continue;
+
+                    boolean exists = false;
+                    try (PreparedStatement psExisting = conn.prepareStatement("SELECT id FROM products WHERE name = ? LIMIT 1;")) {
+                        psExisting.setString(1, item.name());
+                        ResultSet existingResult = psExisting.executeQuery();
+                        exists = existingResult.next();
+                    }
+                    if (exists) continue;
+
+                    try (PreparedStatement psProduct = conn.prepareStatement(
+                            "INSERT INTO products (seller_id, category_id, name, description, original_price, price, stock, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?);")) {
+                        psProduct.setLong(1, sellerId);
+                        psProduct.setLong(2, categoryId);
+                        psProduct.setString(3, item.name());
+                        psProduct.setString(4, item.desc());
+                        psProduct.setDouble(5, item.origPrice());
+                        psProduct.setDouble(6, item.price());
+                        psProduct.setInt(7, item.stock());
+                        psProduct.setString(8, item.img());
+                        psProduct.executeUpdate();
+                    }
+                }
+                logger.info("Seeded additional idempotent product catalog records.");
+            }
+
         } catch (Exception e) {
             logger.error("Error initializing database schema and seed data", e);
         }
