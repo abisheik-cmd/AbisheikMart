@@ -30,7 +30,7 @@ RUN apt-get update \
     && rm -rf "$CATALINA_HOME/webapps"/* \
     && mkdir -p /data/h2 /opt/h2
 
-COPY --from=build /build/runtime/abisheikmart.war "$CATALINA_HOME/webapps/abisheikmart.war"
+COPY --from=build /build/runtime/abisheikmart.war "$CATALINA_HOME/webapps/ROOT.war"
 COPY --from=build /build/runtime/h2-2.2.224.jar /opt/h2/h2-2.2.224.jar
 COPY railway-entrypoint.sh /usr/local/bin/railway-entrypoint.sh
 RUN chmod +x /usr/local/bin/railway-entrypoint.sh

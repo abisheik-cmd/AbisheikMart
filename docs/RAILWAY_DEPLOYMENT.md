@@ -29,7 +29,7 @@ DB_URL=jdbc:h2:tcp://127.0.0.1:9123//data/h2/abisheikmartdb;DB_CLOSE_DELAY=-1
 
 The application reads `DB_URL`, `DB_DRIVER`, `DB_USERNAME`, and `DB_PASSWORD` in `AppContextListener`. Railway supplies `PORT`; the entrypoint rewrites Tomcat's HTTP connector to use it.
 
-8. Deploy the service and wait for the Docker build and startup logs to show:
+8. Deploy the service and wait for the Docker build and startup logs to show. The image deploys the WAR as Tomcat `ROOT.war`, so the generated hostname serves the application at `/`:
 
 ```text
 Starting AbisheikMart on Tomcat ... with H2 TCP Server Mode
@@ -38,7 +38,7 @@ AbisheikMart 2.0 Application Context initialized successfully.
 ```
 
 9. In **Settings → Networking → Public Networking**, choose **Generate Domain**. The resulting `https://...up.railway.app` URL is the review URL.
-10. Configure the service health check path as `/abisheikmart/` if Railway does not import the value from `railway.toml` automatically.
+10. Configure the service health check path as `/` if Railway does not import the value from `railway.toml` automatically.
 
 ## Remote verification checklist
 
