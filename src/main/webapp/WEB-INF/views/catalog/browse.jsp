@@ -12,7 +12,7 @@
             <span class="event-tag">🔥 Grand Festive Sale — Up to 50% OFF</span>
             <h1 class="hero-title">Exclusive Indian Rupee (₹) Deals & Festive Offers</h1>
             <p class="hero-subtitle">Shop top categories with Instant Coupons, Mobile Verification, and Express Delivery.</p>
-            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <div class="hero-actions">
                 <button class="btn btn-warning" onclick="openLuckyDrawModal()">🎁 Spin Lucky Draw Wheel</button>
                 <button class="btn btn-primary" onclick="document.getElementById('catalog-grid').scrollIntoView({behavior: 'smooth'})">Browse All Products ↓</button>
             </div>

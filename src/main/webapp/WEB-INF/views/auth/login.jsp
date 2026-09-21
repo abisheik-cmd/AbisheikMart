@@ -6,7 +6,7 @@
     <div class="auth-portal-card" style="width: 100%; max-width: 440px;">
         <div class="auth-header">
             <img src="${pageContext.request.contextPath}/images/logo.jpg" alt="AbisheikMart Logo" style="height: 72px; width: 72px; border-radius: 16px; object-fit: cover; margin-bottom: 0.8rem; box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);">
-            <h1>AbisheikMart 2.0</h1>
+            <h1>AbisheikMart</h1>
             <p>Sign in to your e-commerce account</p>
         </div>
 

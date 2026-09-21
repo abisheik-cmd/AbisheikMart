@@ -41,7 +41,7 @@ public class SellerServlet extends HttpServlet {
         if ("/seller/product/new".equals(path)) {
             req.setAttribute("product", null);
             req.setAttribute("categories", categoryService.getAllCategories());
-            req.setAttribute("pageTitle", "Add New Product Listing - AbisheikMart 2.0");
+            req.setAttribute("pageTitle", "Add New Product Listing - AbisheikMart");
             req.getRequestDispatcher("/WEB-INF/views/seller/product-form.jsp").forward(req, resp);
             return;
         }
@@ -53,7 +53,7 @@ public class SellerServlet extends HttpServlet {
                         .orElseThrow(() -> new SecurityException("Product not found or not owned by you."));
                 req.setAttribute("product", product);
                 req.setAttribute("categories", categoryService.getAllCategories());
-                req.setAttribute("pageTitle", "Edit Product Listing - AbisheikMart 2.0");
+                req.setAttribute("pageTitle", "Edit Product Listing - AbisheikMart");
                 req.getRequestDispatcher("/WEB-INF/views/seller/product-form.jsp").forward(req, resp);
             } catch (RuntimeException exception) {
                 resp.sendError(HttpServletResponse.SC_FORBIDDEN, exception.getMessage());
@@ -62,7 +62,7 @@ public class SellerServlet extends HttpServlet {
         }
         if ("/seller/orders".equals(path)) {
             req.setAttribute("orders", sellerService.getOrders(user.getId(), user.getRole()));
-            req.setAttribute("pageTitle", "Seller Orders - AbisheikMart 2.0");
+            req.setAttribute("pageTitle", "Seller Orders - AbisheikMart");
             req.getRequestDispatcher("/WEB-INF/views/seller/orders.jsp").forward(req, resp);
             return;
         }
@@ -74,7 +74,7 @@ public class SellerServlet extends HttpServlet {
         req.setAttribute("totalListings", stats.getActiveProducts());
         req.setAttribute("totalInventory", products.stream().mapToInt(product -> product.getStock() == null ? 0 : product.getStock()).sum());
         req.setAttribute("lowStockCount", products.stream().filter(product -> product.getStock() != null && product.getStock() > 0 && product.getStock() <= 5).count());
-        req.setAttribute("pageTitle", "Seller Dashboard - AbisheikMart 2.0");
+        req.setAttribute("pageTitle", "Seller Dashboard - AbisheikMart");
         req.getRequestDispatcher("/WEB-INF/views/seller/dashboard.jsp").forward(req, resp);
     }
 

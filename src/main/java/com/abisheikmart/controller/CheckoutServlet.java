@@ -43,7 +43,7 @@ public class CheckoutServlet extends HttpServlet {
             }
 
             req.setAttribute("cart", cart);
-            req.setAttribute("pageTitle", "Order Checkout - AbisheikMart 2.0");
+            req.setAttribute("pageTitle", "Order Checkout - AbisheikMart");
             req.getRequestDispatcher("/WEB-INF/views/cart/checkout.jsp").forward(req, resp);
         } catch (Exception e) {
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());

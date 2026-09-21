@@ -53,7 +53,7 @@ public class CatalogServlet extends HttpServlet {
                         req.setAttribute("reviews", reviews);
                         req.setAttribute("myReview", sessionUser == null ? null : reviewService.getUserProductReview(sessionUser.getId(), id).orElse(null));
                         req.setAttribute("canReview", sessionUser != null && reviewService.canReview(sessionUser.getId(), sessionUser.getRole(), id));
-                        req.setAttribute("pageTitle", p.getName() + " - AbisheikMart 2.0");
+                        req.setAttribute("pageTitle", p.getName() + " - AbisheikMart");
                         req.getRequestDispatcher("/WEB-INF/views/catalog/product-detail.jsp").forward(req, resp);
                         return;
                     }
@@ -77,7 +77,7 @@ public class CatalogServlet extends HttpServlet {
         req.setAttribute("recommendations", recommendations);
         req.setAttribute("selectedCategory", category != null ? category : "ALL");
         req.setAttribute("selectedSort", sort != null ? sort : "newest");
-        req.setAttribute("pageTitle", "Product Catalog - AbisheikMart 2.0");
+        req.setAttribute("pageTitle", "Product Catalog - AbisheikMart");
 
         req.getRequestDispatcher("/WEB-INF/views/catalog/browse.jsp").forward(req, resp);
     }

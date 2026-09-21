@@ -1109,27 +1109,37 @@ body {
    Festive Event Banner (browse.jsp)
    ========================================================================== */
 .event-banner {
-    background: linear-gradient(135deg,
-        rgba(139, 92, 246, 0.3) 0%,
-        rgba(2, 132, 199, 0.25) 50%,
-        rgba(16, 185, 129, 0.2) 100%);
-    border: 1px solid rgba(139, 92, 246, 0.4);
+    background: linear-gradient(120deg, #eff6ff 0%, #ffffff 54%, #fff7ed 100%);
+    border: 1px solid #bfdbfe;
     border-radius: var(--radius-lg);
-    padding: 2.8rem 3rem;
+    padding: clamp(2.4rem, 5vw, 4.5rem) clamp(1.5rem, 6vw, 5rem);
     margin-bottom: 2rem;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 18px 45px rgba(37, 99, 235, 0.12);
 }
 
 .event-banner::before {
     content: '';
     position: absolute;
-    top: -50%;
-    right: -10%;
-    width: 400px;
-    height: 400px;
+    top: -45%;
+    right: -6%;
+    width: 360px;
+    height: 360px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(139, 92, 246, 0.15), transparent 70%);
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.16), transparent 68%);
+    pointer-events: none;
+}
+
+.event-banner::after {
+    content: '';
+    position: absolute;
+    left: -90px;
+    bottom: -130px;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.16), transparent 68%);
     pointer-events: none;
 }
 
@@ -1140,16 +1150,64 @@ body {
 
 .event-tag {
     display: inline-block;
-    background: rgba(245, 158, 11, 0.2);
-    border: 1px solid rgba(245, 158, 11, 0.4);
-    color: #fbbf24;
-    font-size: 0.8rem;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    color: #b45309;
+    font-size: 0.75rem;
     font-weight: 700;
-    padding: 0.3rem 0.9rem;
-    border-radius: 20px;
-    margin-bottom: 0.9rem;
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1.15rem;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.1em;
+}
+
+.event-banner .hero-title {
+    color: #0f172a;
+    font-size: clamp(2rem, 4.5vw, 3.55rem);
+    line-height: 1.08;
+    letter-spacing: -0.04em;
+    max-width: 720px;
+    margin-bottom: 1rem;
+    background: linear-gradient(110deg, #1d4ed8 0%, #2563eb 58%, #c2410c 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.event-banner .hero-subtitle {
+    color: #475569;
+    font-size: clamp(1rem, 1.8vw, 1.15rem);
+    line-height: 1.7;
+    max-width: 590px;
+    margin-bottom: 0;
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    margin-top: 1.65rem;
+}
+
+.event-banner .btn-primary {
+    background: #2563eb;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.24);
+}
+
+.event-banner .btn-primary:hover {
+    background: #1d4ed8;
+    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.3);
+}
+
+.event-banner .btn-warning {
+    box-shadow: 0 8px 18px rgba(245, 158, 11, 0.24);
+}
+
+@media (max-width: 600px) {
+    .event-banner { padding: 2.25rem 1.25rem; }
+    .hero-actions { align-items: stretch; }
+    .hero-actions .btn { width: 100%; }
 }
 
 /* ==========================================================================

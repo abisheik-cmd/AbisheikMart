@@ -56,7 +56,7 @@ public class CartServlet extends HttpServlet {
             } else {
                 req.setAttribute("cart", cart);
                 req.setAttribute("cartItemCount", cart.getItems().stream().mapToInt(i -> i.getQuantity()).sum());
-                req.setAttribute("pageTitle", "Shopping Cart - AbisheikMart 2.0");
+                req.setAttribute("pageTitle", "Shopping Cart - AbisheikMart");
                 req.getRequestDispatcher("/WEB-INF/views/cart/cart.jsp").forward(req, resp);
             }
         } catch (Exception e) {

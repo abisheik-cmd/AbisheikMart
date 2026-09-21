@@ -37,7 +37,7 @@ public class OrderServlet extends HttpServlet {
             resp.getWriter().write(JsonUtil.toJson(ApiResponse.ok(orders)));
         } else {
             req.setAttribute("orders", orders);
-            req.setAttribute("pageTitle", "Order History - AbisheikMart 2.0");
+            req.setAttribute("pageTitle", "Order History - AbisheikMart");
             req.getRequestDispatcher("/WEB-INF/views/order/order-history.jsp").forward(req, resp);
         }
     }

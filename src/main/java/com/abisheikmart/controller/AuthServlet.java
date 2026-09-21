@@ -25,10 +25,10 @@ public class AuthServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String path = req.getServletPath();
         if ("/login".equals(path)) {
-            req.setAttribute("pageTitle", "Log In - AbisheikMart 2.0");
+            req.setAttribute("pageTitle", "Log In - AbisheikMart");
             req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);
         } else if ("/register".equals(path)) {
-            req.setAttribute("pageTitle", "Create Account - AbisheikMart 2.0");
+            req.setAttribute("pageTitle", "Create Account - AbisheikMart");
             req.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(req, resp);
         } else {
             resp.sendRedirect(req.getContextPath() + "/");
