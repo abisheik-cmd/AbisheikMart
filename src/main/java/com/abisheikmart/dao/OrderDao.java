@@ -224,7 +224,7 @@ public class OrderDao {
 
     public List<OrderItem> findOrderItemsByOrderId(Long orderId) {
         List<OrderItem> list = new ArrayList<>();
-        String sql = "SELECT id, order_id, product_id, seller_id, product_name, quantity, unit_price, subtotal FROM order_items WHERE order_id = ?;";
+        String sql = "SELECT oi.id, oi.order_id, oi.product_id, oi.seller_id, u.name AS seller_name, oi.product_name, oi.quantity, oi.unit_price, oi.subtotal FROM order_items oi LEFT JOIN users u ON u.id = oi.seller_id WHERE oi.order_id = ?;";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, orderId);
@@ -235,6 +235,7 @@ public class OrderDao {
                     oi.setOrderId(rs.getLong("order_id"));
                     oi.setProductId(rs.getLong("product_id"));
                     oi.setSellerId(rs.getLong("seller_id"));
+                    oi.setSellerName(rs.getString("seller_name"));
                     oi.setProductName(rs.getString("product_name"));
                     oi.setQuantity(rs.getInt("quantity"));
                     oi.setUnitPrice(rs.getDouble("unit_price"));

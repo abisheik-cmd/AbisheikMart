@@ -66,6 +66,7 @@ class AdminDaoTest {
         assertEquals(2, ORDER_DAO.findAllOrders(null, null, null).size());
         assertEquals(1, ORDER_DAO.findAllOrders(null, "PLACED", null).size());
         assertEquals(2, ORDER_DAO.countOrders()); assertEquals(1, ORDER_DAO.countOrdersByStatus("DELIVERED")); assertEquals(380.0, ORDER_DAO.calculateMarketplaceOrderValue());
+        assertEquals("Seller", ORDER_DAO.findOrderById(1L).orElseThrow().getItems().get(0).getSellerName());
         assertTrue(ORDER_DAO.updateOrderStatus(1L, "SHIPPED"));
         assertEquals("SHIPPED", ORDER_DAO.findOrderById(1L).orElseThrow().getStatus());
     }

@@ -3,6 +3,7 @@ package com.abisheikmart.service;
 import com.abisheikmart.dao.OrderDao;
 import com.abisheikmart.dao.ProductDao;
 import com.abisheikmart.dao.UserDao;
+import com.abisheikmart.model.AdminUserSummary;
 import com.abisheikmart.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,6 +57,14 @@ class AdminServiceTest {
         var results = adminService.listUsers(99L, "ADMIN", "sell", "SELLER", true);
         assertEquals(1, results.size()); assertEquals("seller@test", results.get(0).getEmail()); assertTrue(results.get(0).isActive());
         verify(userDao).findAllUsers("sell", "SELLER", true);
+    }
+
+    @Test
+    void userDetailReturnsSafeSummaryInsteadOfUserCredentials() {
+        User user = new User(); user.setId(2L); user.setName("Seller"); user.setEmail("seller@test"); user.setRole("SELLER"); user.setActive(true); user.setPasswordHash("secret-hash");
+        when(userDao.findById(2L)).thenReturn(Optional.of(user));
+        var summary = adminService.getUser(99L, "ADMIN", 2L);
+        assertInstanceOf(AdminUserSummary.class, summary); assertEquals("seller@test", summary.getEmail());
     }
 
     @Test

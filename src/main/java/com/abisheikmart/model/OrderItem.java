@@ -9,6 +9,7 @@ public class OrderItem implements Serializable {
     private Long orderId;
     private Long productId;
     private Long sellerId;
+    private String sellerName;
     private String productName;
     private Integer quantity;
     private Double unitPrice;
@@ -27,6 +28,9 @@ public class OrderItem implements Serializable {
 
     public Long getSellerId() { return sellerId; }
     public void setSellerId(Long sellerId) { this.sellerId = sellerId; }
+
+    public String getSellerName() { return sellerName; }
+    public void setSellerName(String sellerName) { this.sellerName = sellerName; }
 
     public String getProductName() { return productName; }
     public void setProductName(String productName) { this.productName = productName; }

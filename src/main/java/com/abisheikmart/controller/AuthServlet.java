@@ -62,6 +62,8 @@ public class AuthServlet extends HttpServlet {
                     String redirect = req.getParameter("redirect");
                     if (redirect != null && !redirect.isBlank() && !redirect.contains("login")) {
                         resp.sendRedirect(redirect);
+                    } else if ("ADMIN".equalsIgnoreCase(user.getRole())) {
+                        resp.sendRedirect(req.getContextPath() + "/admin");
                     } else if ("SELLER".equalsIgnoreCase(user.getRole())) {
                         resp.sendRedirect(req.getContextPath() + "/seller/dashboard");
                     } else {
@@ -122,4 +124,3 @@ public class AuthServlet extends HttpServlet {
         }
     }
 }
-
