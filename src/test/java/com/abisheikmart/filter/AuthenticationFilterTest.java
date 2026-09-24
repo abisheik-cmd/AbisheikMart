@@ -31,4 +31,12 @@ class AuthenticationFilterTest {
         filter.doFilter(request, response, chain);
         verify(chain).doFilter(request, response);
     }
+
+    @Test
+    void adminLoginPageIsReachableWithoutAuthentication() throws Exception {
+        AuthenticationFilter filter = new AuthenticationFilter(); HttpServletRequest request = mock(HttpServletRequest.class); HttpServletResponse response = mock(HttpServletResponse.class); FilterChain chain = mock(FilterChain.class);
+        when(request.getContextPath()).thenReturn(""); when(request.getRequestURI()).thenReturn("/admin/login");
+        filter.doFilter(request, response, chain);
+        verify(chain).doFilter(request, response);
+    }
 }

@@ -1,8 +1,10 @@
 package com.abisheikmart.controller;
 
 import com.abisheikmart.model.User;
+import com.abisheikmart.dto.LoginRequest;
 import com.abisheikmart.service.CategoryService;
 import com.abisheikmart.service.AdminService;
+import com.abisheikmart.service.AuthService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,18 +14,31 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebServlet(urlPatterns = {"/admin", "/admin/", "/admin/users", "/admin/users/view", "/admin/users/status", "/admin/products", "/admin/products/view", "/admin/products/status", "/admin/orders", "/admin/orders/view", "/admin/orders/status"})
+@WebServlet(urlPatterns = {"/admin", "/admin/", "/admin/login", "/admin/dashboard", "/admin/users", "/admin/users/view", "/admin/users/status", "/admin/products", "/admin/products/view", "/admin/products/status", "/admin/orders", "/admin/orders/*", "/admin/orders/view", "/admin/orders/status"})
 public class AdminServlet extends HttpServlet {
     private final AdminService adminService = new AdminService();
     private final CategoryService categoryService = new CategoryService();
+    private final AuthService authService = new AuthService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        if ("/admin/login".equals(req.getServletPath())) {
+            HttpSession session = req.getSession(false);
+            User current = session == null ? null : (User) session.getAttribute("user");
+            if (current != null && "ADMIN".equalsIgnoreCase(current.getRole())) {
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard");
+            } else if (current != null) {
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "ADMIN access is required.");
+            } else {
+                req.getRequestDispatcher("/WEB-INF/views/admin/login.jsp").forward(req, resp);
+            }
+            return;
+        }
         User admin = requireAdmin(req, resp);
         if (admin == null) return;
         String path = req.getServletPath();
         try {
-            if ("/admin".equals(path) || "/admin/".equals(path)) {
+            if ("/admin".equals(path) || "/admin/".equals(path) || "/admin/dashboard".equals(path)) {
                 req.setAttribute("stats", adminService.getDashboard(admin.getId(), admin.getRole()));
                 req.getRequestDispatcher("/WEB-INF/views/admin/dashboard.jsp").forward(req, resp);
             } else if ("/admin/users/view".equals(path)) {
@@ -39,8 +54,9 @@ public class AdminServlet extends HttpServlet {
                 req.setAttribute("categories", categoryService.getAllCategories());
                 req.setAttribute("products", adminService.listProducts(admin.getId(), admin.getRole(), req.getParameter("q"), optionalLong(req.getParameter("categoryId")), optionalLong(req.getParameter("sellerId")), activeFilter(req.getParameter("active"))));
                 req.getRequestDispatcher("/WEB-INF/views/admin/products.jsp").forward(req, resp);
-            } else if ("/admin/orders/view".equals(path)) {
-                req.setAttribute("order", adminService.getOrder(admin.getId(), admin.getRole(), requiredLong(req.getParameter("id"), "Order ID is required.")).orElse(null));
+            } else if ("/admin/orders/view".equals(path) || ("/admin/orders".equals(path) && req.getPathInfo() != null && req.getPathInfo().matches("/\\d+"))) {
+                String id = "/admin/orders/view".equals(path) ? req.getParameter("id") : req.getPathInfo().substring(1);
+                req.setAttribute("order", adminService.getOrder(admin.getId(), admin.getRole(), requiredLong(id, "Order ID is required.")).orElse(null));
                 req.getRequestDispatcher("/WEB-INF/views/admin/order-details.jsp").forward(req, resp);
             } else if ("/admin/orders".equals(path)) {
                 req.setAttribute("orders", adminService.listOrders(admin.getId(), admin.getRole(), req.getParameter("q"), req.getParameter("status"), optionalLong(req.getParameter("buyerId"))));
@@ -53,6 +69,28 @@ public class AdminServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        if ("/admin/login".equals(req.getServletPath())) {
+            LoginRequest loginRequest = new LoginRequest();
+            loginRequest.setEmail(req.getParameter("email"));
+            loginRequest.setPassword(req.getParameter("password"));
+            try {
+                User user = authService.login(loginRequest);
+                if (!"ADMIN".equalsIgnoreCase(user.getRole())) {
+                    resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Only ADMIN accounts may use the admin login.");
+                    return;
+                }
+                req.getSession(true).setAttribute("user", user);
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard");
+            } catch (IllegalArgumentException exception) {
+                req.setAttribute("errorMessage", exception.getMessage());
+                try {
+                    req.getRequestDispatcher("/WEB-INF/views/admin/login.jsp").forward(req, resp);
+                } catch (ServletException servletException) {
+                    throw new IOException(servletException);
+                }
+            }
+            return;
+        }
         User admin = requireAdmin(req, resp);
         if (admin == null) return;
         String path = req.getServletPath();

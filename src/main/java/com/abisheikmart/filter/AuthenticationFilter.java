@@ -21,6 +21,14 @@ public class AuthenticationFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
+        String requestUri = httpRequest.getRequestURI();
+        if (requestUri == null) requestUri = "";
+        boolean isAdminLogin = requestUri.equals(httpRequest.getContextPath() + "/admin/login");
+        if (isAdminLogin) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         HttpSession session = httpRequest.getSession(false);
         User user = (session != null) ? (User) session.getAttribute("user") : null;
 
@@ -29,14 +37,15 @@ public class AuthenticationFilter implements Filter {
             String requestedWith = httpRequest.getHeader("X-Requested-With");
             boolean isAjax = (requestedWith != null && "XMLHttpRequest".equals(requestedWith)) ||
                     (acceptHeader != null && acceptHeader.contains("application/json")) ||
-                    httpRequest.getRequestURI().startsWith(httpRequest.getContextPath() + "/api/");
+                    requestUri.startsWith(httpRequest.getContextPath() + "/api/");
 
             if (isAjax) {
                 httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 httpResponse.setContentType("application/json");
                 httpResponse.getWriter().write(JsonUtil.toJson(ApiResponse.error("Authentication required. Please log in.")));
             } else {
-                httpResponse.sendRedirect(httpRequest.getContextPath() + "/login?redirect=" + httpRequest.getRequestURI());
+                String loginPath = requestUri.startsWith(httpRequest.getContextPath() + "/admin") ? "/admin/login" : "/login";
+                httpResponse.sendRedirect(httpRequest.getContextPath() + loginPath + "?redirect=" + requestUri);
             }
             return;
         }

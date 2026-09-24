@@ -1390,6 +1390,15 @@ footer > div { color: #6B7280 !important; }
     text-align: center;
     padding: 2rem !important;
 }
+.admin-login-error {
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    color: #B91C1C;
+    padding: .8rem 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    font-size: .9rem;
+}
 .admin-detail-grid {
     display: grid;
     grid-template-columns: minmax(180px, 280px) 1fr;

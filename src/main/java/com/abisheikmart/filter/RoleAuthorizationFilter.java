@@ -25,6 +25,10 @@ public class RoleAuthorizationFilter implements Filter {
         User user = (session != null) ? (User) session.getAttribute("user") : null;
 
         String uri = httpRequest.getRequestURI();
+        if (uri.equals(httpRequest.getContextPath() + "/admin/login")) {
+            chain.doFilter(request, response);
+            return;
+        }
         boolean isSellerPath = uri.contains("/seller");
         boolean isAdminPath = uri.contains("/admin");
 
@@ -37,7 +41,8 @@ public class RoleAuthorizationFilter implements Filter {
                 httpResponse.setContentType("application/json");
                 httpResponse.getWriter().write(JsonUtil.toJson(ApiResponse.error("Authentication required. Please log in.")));
             } else {
-                httpResponse.sendRedirect(httpRequest.getContextPath() + "/login?redirect=" + uri);
+                String loginPath = uri.startsWith(httpRequest.getContextPath() + "/admin") ? "/admin/login" : "/login";
+                httpResponse.sendRedirect(httpRequest.getContextPath() + loginPath + "?redirect=" + uri);
             }
             return;
         }
