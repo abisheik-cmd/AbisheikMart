@@ -32,7 +32,7 @@
 
             <div class="form-group">
                 <label for="login-email">Email Address</label>
-                <input type="email" id="login-email" name="email" class="form-control" placeholder="admin@abishmart.com or buyer" required>
+                <input type="email" id="login-email" name="email" class="form-control" placeholder="you@example.com" required>
             </div>
 
             <div class="form-group">
@@ -43,13 +43,11 @@
             <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.2rem;">Log In to Marketplace</button>
         </form>
 
-        <div style="margin-top: 1.5rem; text-align: center; font-size: 0.85rem; color: var(--text-muted);">
-            Demo Accounts:<br>
-            <strong>Admin</strong>: admin@abishmart.com / Admin@123<br>
-            <strong>Seller</strong>: seller@abishmart.com / Seller@123
+        <div style="margin-top: 1.5rem; text-align: center; font-size: 0.9rem; color: var(--text-muted);">
+            <span>Are you managing the marketplace?</span>
+            <a href="${pageContext.request.contextPath}/admin/login" style="display:inline-block;margin-left:.35rem;color:var(--accent-cyan);font-weight:700;text-decoration:none;">Admin Login</a>
         </div>
     </div>
 </div>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />
-

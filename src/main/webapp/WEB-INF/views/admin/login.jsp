@@ -24,7 +24,7 @@
                 <label for="admin-password">Password</label>
                 <input type="password" id="admin-password" name="password" class="form-control" autocomplete="current-password" required>
             </div>
-            <button type="submit" class="btn btn-primary" style="width:100%;margin-top:1.2rem;">Sign in to Admin</button>
+            <button type="submit" class="btn btn-primary" style="width:100%;margin-top:1.2rem;">Admin Sign In</button>
         </form>
 
         <p style="margin-top:1.5rem;text-align:center;font-size:.85rem;color:var(--text-muted);">
