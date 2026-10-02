@@ -82,20 +82,43 @@ public class AppContextListener implements ServletContextListener {
                 } catch (Exception ignored) {}
             }
 
-            // Seed default Admin
-            try (PreparedStatement psCheck = conn.prepareStatement("SELECT COUNT(*) FROM users WHERE email = ?;")) {
-                psCheck.setString(1, "admin@abishmart.com");
-                ResultSet rs = psCheck.executeQuery();
-                if (rs.next() && rs.getInt(1) == 0) {
-                    try (PreparedStatement psInsert = conn.prepareStatement(
-                            "INSERT INTO users (name, email, password_hash, role, phone) VALUES (?, ?, ?, 'ADMIN', '9876543210');")) {
-                        psInsert.setString(1, "System Administrator");
-                        psInsert.setString(2, "admin@abishmart.com");
-                        psInsert.setString(3, PasswordUtil.hashPassword("Admin@123"));
-                        psInsert.executeUpdate();
-                        logger.info("Seeded default admin account (admin@abishmart.com / Admin@123)");
-                    }
+            // Provision the single controlled development administrator. The password is
+            // stored only as a BCrypt hash, and reruns update the existing account rather
+            // than inserting duplicates. Existing legacy admin accounts are migrated when
+            // the requested account has not yet been provisioned.
+            final String adminEmail = "abisheikj368@gmail.com";
+            final String adminPasswordHash = PasswordUtil.hashPassword("abizk368");
+            int adminUpdated;
+            try (PreparedStatement psUpdate = conn.prepareStatement(
+                    "UPDATE users SET name = ?, password_hash = ?, role = 'ADMIN', active = TRUE " +
+                    "WHERE email = ?;")) {
+                psUpdate.setString(1, "System Administrator");
+                psUpdate.setString(2, adminPasswordHash);
+                psUpdate.setString(3, adminEmail);
+                adminUpdated = psUpdate.executeUpdate();
+            }
+            if (adminUpdated == 0) {
+                try (PreparedStatement psMigrate = conn.prepareStatement(
+                        "UPDATE users SET name = ?, email = ?, password_hash = ?, role = 'ADMIN', active = TRUE " +
+                        "WHERE email = ? AND role = 'ADMIN';")) {
+                    psMigrate.setString(1, "System Administrator");
+                    psMigrate.setString(2, adminEmail);
+                    psMigrate.setString(3, adminPasswordHash);
+                    psMigrate.setString(4, "admin@abishmart.com");
+                    adminUpdated = psMigrate.executeUpdate();
                 }
+            }
+            if (adminUpdated == 0) {
+                try (PreparedStatement psInsert = conn.prepareStatement(
+                        "INSERT INTO users (name, email, password_hash, role, active, phone) VALUES (?, ?, ?, 'ADMIN', TRUE, '9876543210');")) {
+                    psInsert.setString(1, "System Administrator");
+                    psInsert.setString(2, adminEmail);
+                    psInsert.setString(3, adminPasswordHash);
+                    psInsert.executeUpdate();
+                    logger.info("Provisioned controlled development administrator account.");
+                }
+            } else {
+                logger.info("Updated controlled development administrator account.");
             }
 
             // Seed default Seller
