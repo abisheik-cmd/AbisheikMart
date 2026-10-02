@@ -1,73 +1,75 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<header class="navbar" id="main-navbar">
-    <div class="brand" onclick="window.location.href='${pageContext.request.contextPath}/catalog'">
-        <img src="${pageContext.request.contextPath}/images/logo.jpg" alt="AbisheikMart Logo" style="height: 38px; width: 38px; border-radius: 8px; object-fit: cover; margin-right: 0.5rem; box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);"> AbisheikMart
-    </div>
-
-    <!-- Global Search Bar -->
-    <form action="${pageContext.request.contextPath}/catalog" method="GET" class="nav-search" id="nav-search-container">
-        <span class="nav-search-icon">🔍</span>
-        <input type="text" name="q" id="global-search-input" value="${param.q}" placeholder="Search products, categories, sellers..." oninput="handleSearchDebounce(event)">
-    </form>
-
-    <nav class="nav-links">
-        <button type="button" class="btn btn-warning btn-sm nav-lucky-btn" onclick="openLuckyDrawModal()">
-            🎁 Lucky Draw
-        </button>
-
-        <a href="${pageContext.request.contextPath}/catalog" class="nav-item ${activeNav == 'catalog' ? 'active' : ''}">
-            <span>🛍️</span> Browse
-        </a>
-        <a href="${pageContext.request.contextPath}/cart" class="nav-item cart-btn-trigger ${activeNav == 'cart' ? 'active' : ''}">
-            <span>🛒</span> Cart <span class="cart-count-badge" id="cart-count">${cartItemCount != null ? cartItemCount : 0}</span>
-        </a>
-        <a href="${pageContext.request.contextPath}/orders" class="nav-item ${activeNav == 'orders' ? 'active' : ''}">
-            <span>📦</span> Orders
-        </a>
-
-        <c:if test="${sessionScope.user != null}">
-            <!-- Notifications Bell Dropdown -->
-            <div class="notification-dropdown-container">
-                <button type="button" class="notification-bell-btn" onclick="toggleNotificationDropdown()">
-                    🔔 <span class="notif-badge" id="notif-count">0</span>
-                </button>
-                <div class="notification-dropdown-menu" id="notif-menu">
-                    <div class="notif-header">
-                        <span>Notifications</span>
-                        <button type="button" class="notif-clear-btn" onclick="markNotificationsRead()">Mark Read</button>
-                    </div>
-                    <div class="notif-body" id="notif-list">
-                        <div class="notif-item">No new notifications</div>
-                    </div>
-                </div>
+<c:choose>
+    <c:when test="${sessionScope.user != null && sessionScope.user.role == 'ADMIN'}">
+        <jsp:include page="/WEB-INF/views/common/admin-navbar.jsp" />
+    </c:when>
+    <c:otherwise>
+        <header class="navbar" id="main-navbar">
+            <div class="brand" onclick="window.location.href='${pageContext.request.contextPath}/catalog'">
+                <img src="${pageContext.request.contextPath}/images/logo.jpg" alt="AbisheikMart Logo" style="height: 38px; width: 38px; border-radius: 8px; object-fit: cover; margin-right: 0.5rem; box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);"> AbisheikMart
             </div>
-        </c:if>
 
-        <c:if test="${sessionScope.user != null && sessionScope.user.role == 'SELLER'}">
-            <a href="${pageContext.request.contextPath}/seller/dashboard" class="nav-item ${activeNav == 'seller' ? 'active' : ''}">
-                <span>📊</span> Seller Dashboard
-            </a>
-        </c:if>
-        <c:if test="${sessionScope.user != null && sessionScope.user.role == 'ADMIN'}">
-            <a href="${pageContext.request.contextPath}/admin" class="nav-item ${activeNav == 'admin' ? 'active' : ''}">
-                <span>🛡️</span> Admin Dashboard
-            </a>
-        </c:if>
+            <!-- Global Search Bar -->
+            <form action="${pageContext.request.contextPath}/catalog" method="GET" class="nav-search" id="nav-search-container">
+                <span class="nav-search-icon">🔍</span>
+                <input type="text" name="q" id="global-search-input" value="${param.q}" placeholder="Search products, categories, sellers..." oninput="handleSearchDebounce(event)">
+            </form>
 
-        <div id="nav-user-container" style="display: flex; align-items: center; gap: 0.8rem;">
-            <c:choose>
-                <c:when test="${sessionScope.user != null}">
-                    <span class="badge-role role-${sessionScope.user.role.toLowerCase()}">${sessionScope.user.role}</span>
-                    <span style="font-weight: 600; color: #fff;">${sessionScope.user.name}</span>
-                    <a href="${pageContext.request.contextPath}/logout" class="btn btn-secondary btn-sm">Log Out</a>
-                </c:when>
-                <c:otherwise>
-                    <a href="${pageContext.request.contextPath}/login" class="btn btn-primary btn-sm">Log In</a>
-                    <a href="${pageContext.request.contextPath}/register" class="btn btn-secondary btn-sm">Register</a>
-                </c:otherwise>
-            </c:choose>
-        </div>
-    </nav>
-</header>
+            <nav class="nav-links">
+                <button type="button" class="btn btn-warning btn-sm nav-lucky-btn" onclick="openLuckyDrawModal()">
+                    🎁 Lucky Draw
+                </button>
+
+                <a href="${pageContext.request.contextPath}/catalog" class="nav-item ${activeNav == 'catalog' ? 'active' : ''}">
+                    <span>🛍️</span> Browse
+                </a>
+                <a href="${pageContext.request.contextPath}/cart" class="nav-item cart-btn-trigger ${activeNav == 'cart' ? 'active' : ''}">
+                    <span>🛒</span> Cart <span class="cart-count-badge" id="cart-count">${cartItemCount != null ? cartItemCount : 0}</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/orders" class="nav-item ${activeNav == 'orders' ? 'active' : ''}">
+                    <span>📦</span> Orders
+                </a>
+
+                <c:if test="${sessionScope.user != null}">
+                    <!-- Notifications Bell Dropdown -->
+                    <div class="notification-dropdown-container">
+                        <button type="button" class="notification-bell-btn" onclick="toggleNotificationDropdown()">
+                            🔔 <span class="notif-badge" id="notif-count">0</span>
+                        </button>
+                        <div class="notification-dropdown-menu" id="notif-menu">
+                            <div class="notif-header">
+                                <span>Notifications</span>
+                                <button type="button" class="notif-clear-btn" onclick="markNotificationsRead()">Mark Read</button>
+                            </div>
+                            <div class="notif-body" id="notif-list">
+                                <div class="notif-item">No new notifications</div>
+                            </div>
+                        </div>
+                    </div>
+                </c:if>
+
+                <c:if test="${sessionScope.user != null && sessionScope.user.role == 'SELLER'}">
+                    <a href="${pageContext.request.contextPath}/seller/dashboard" class="nav-item ${activeNav == 'seller' ? 'active' : ''}">
+                        <span>📊</span> Seller Dashboard
+                    </a>
+                </c:if>
+
+                <div id="nav-user-container" style="display: flex; align-items: center; gap: 0.8rem;">
+                    <c:choose>
+                        <c:when test="${sessionScope.user != null}">
+                            <span class="badge-role role-${sessionScope.user.role.toLowerCase()}">${sessionScope.user.role}</span>
+                            <span style="font-weight: 600; color: #fff;">${sessionScope.user.name}</span>
+                            <a href="${pageContext.request.contextPath}/logout" class="btn btn-secondary btn-sm">Log Out</a>
+                        </c:when>
+                        <c:otherwise>
+                            <a href="${pageContext.request.contextPath}/login" class="btn btn-primary btn-sm">Log In</a>
+                            <a href="${pageContext.request.contextPath}/register" class="btn btn-secondary btn-sm">Register</a>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+            </nav>
+        </header>
+    </c:otherwise>
+</c:choose>
